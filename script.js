@@ -110,26 +110,49 @@
      const nav = document.getElementById('navMobile');
      if (!nav) return;
    
-     // Close when tapping a link
+     const summary = nav.querySelector('summary');
+   
+     const setOpen = (open) => {
+       nav.open = open;
+       document.body.classList.toggle('nav-open', open);
+       summary?.setAttribute('aria-expanded', open ? 'true' : 'false');
+     };
+   
+     // Keep body lock synced if user toggles the <details>
+     nav.addEventListener('toggle', () => setOpen(nav.open));
+   
+     // Close when tapping a link inside the panel
      nav.addEventListener('click', (e) => {
-       const a = e.target instanceof Element ? e.target.closest('a[href^="#"], a[href^="mailto:"], a[href$=".pdf"]') : null;
+       const a =
+         e.target instanceof Element
+           ? e.target.closest('a[href^="#"], a[href^="mailto:"], a[href$=".pdf"]')
+           : null;
        if (!a) return;
-       nav.removeAttribute('open');
+       setOpen(false);
      });
    
      // Close on Escape
      document.addEventListener('keydown', (e) => {
-       if (e.key === 'Escape') nav.removeAttribute('open');
+       if (e.key === 'Escape' && nav.open) setOpen(false);
      });
    
      // Close when tapping outside
      document.addEventListener('click', (e) => {
-       if (!nav.hasAttribute('open')) return;
+       if (!nav.open) return;
        const target = e.target;
-       if (target instanceof Node && !nav.contains(target)) {
-         nav.removeAttribute('open');
-       }
+       if (target instanceof Node && !nav.contains(target)) setOpen(false);
      });
+   
+     // If resizing to desktop width, force close so you never see “open mobile sheet” on desktop
+     const mq = window.matchMedia('(max-width: 940px)');
+     const onChange = () => {
+       if (!mq.matches) setOpen(false);
+     };
+     mq.addEventListener?.('change', onChange);
+     mq.addListener?.(onChange);
+   
+     // Initial sync
+     setOpen(nav.open);
    }
 
   function initTheme() {
