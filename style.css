@@ -117,6 +117,7 @@ html{
 }
 body{
   margin:0;
+  min-height: 100dvh;
   font-family:var(--font);
   color:var(--text);
   line-height:1.55;
@@ -367,7 +368,6 @@ a, .value, .contact-item div, .toplink-note, .featured-sub, .subtitle, p {
 /* -----------------------------
    Mobile nav (premium dropdown)
 ------------------------------ */
-.nav-mobile { display:none; position:relative; }
 
 .nav-toggle{
   padding:10px 12px;
@@ -380,9 +380,12 @@ a, .value, .contact-item div, .toplink-note, .featured-sub, .subtitle, p {
 
 .nav-panel{
   position:absolute;
-  right:0;
   top: calc(100% + 10px);
-  width: min(360px, calc(100vw - 28px));
+  right: 0;
+
+  width: min(360px, calc(100% - 12px));
+  max-width: calc(100% - 12px);
+
   padding:12px;
   border-radius: var(--radius-lg);
   border:1px solid var(--border-strong);
@@ -391,6 +394,10 @@ a, .value, .contact-item div, .toplink-note, .featured-sub, .subtitle, p {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   z-index: 200;
+}
+
+.nav-mobile{
+  flex: 0 0 auto;
 }
 
 .nav-item{
@@ -423,18 +430,14 @@ a, .value, .contact-item div, .toplink-note, .featured-sub, .subtitle, p {
   flex-wrap:wrap;
 }
 
-/* Make header not explode on small screens */
-@media (max-width: 940px){
-  .nav-primary{ display:none; }      /* hide desktop list */
-  .nav-mobile{ display:block; }     /* show hamburger */
-  .nav{ gap:12px; }
-}
+/* Desktop-first: show desktop nav, hide hamburger */
+.nav-primary { display:block; }
+.nav-mobile  { display:none; }
 
-/* Tighten header spacing on phones */
-@media (max-width: 520px){
-  .brand-name{ font-size:12px; }
-  .brand-subtitle{ font-size:12px; }
-  .nav-actions .btn.ghost{ display:none; } /* hide Theme text button if you want */
+/* Mobile: hide desktop nav, show hamburger */
+@media (max-width: 940px){
+  .nav-primary { display:none; }
+  .nav-mobile  { display:block; }
 }
 /* -----------------------------
    Layout / Sections
@@ -521,12 +524,17 @@ section{ padding:64px 0; }
   position:absolute;
   inset:-140px -80px auto -80px;
   height:420px;
+  overflow-x: clip;
   pointer-events:none;
   background:
     radial-gradient(700px 360px at 20% 20%, rgba(122,162,255,0.22), transparent 55%),
     radial-gradient(560px 320px at 70% 10%, rgba(160,255,218,0.16), transparent 60%);
   filter: blur(12px);
   opacity:0.95;
+}
+
+@supports not (overflow: clip){
+  .hero{ overflow-x:hidden; }
 }
 
 .hero-wrap{
@@ -553,6 +561,11 @@ section{ padding:64px 0; }
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
+}
+
+.hero{ overflow-x: clip; }
+@supports not (overflow: clip){
+  .hero{ overflow-x:hidden; }
 }
 
 .hero h1{
@@ -722,9 +735,9 @@ section{ padding:64px 0; }
 .quick .value{
   font-size:14px;
   color:var(--text);
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  overflow-wrap:anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
 
 /* Hero side links */
@@ -1051,6 +1064,9 @@ section{ padding:64px 0; }
   margin-top:8px;
 }
 .contact-item{
+  min-width:0;
+  overflow-wrap:anywhere;
+  word-break: break-word;
   display:flex;
   gap:10px;
   align-items:center;
@@ -1249,4 +1265,10 @@ footer{
   .quick .label{ width: 92px; }
 
   .hero h1{ font-size: clamp(30px, 8vw, 42px); }
+}
+
+/* === HARD LOCK: mobile menu never appears on desktop === */
+@media (min-width: 941px){
+  .nav-mobile{ display:none !important; }
+  .nav-mobile *{ display:none !important; }
 }
