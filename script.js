@@ -106,7 +106,7 @@
     }
   }
 
-   function initMobileNav() {
+  function initMobileNav() {
      const nav = document.getElementById('navMobile');
      if (!nav) return;
    
@@ -114,8 +114,14 @@
    
      const setOpen = (open) => {
        nav.open = open;
-       document.body.classList.toggle('nav-open', open);
        summary?.setAttribute('aria-expanded', open ? 'true' : 'false');
+       
+       // Lock/unlock body scroll
+       if (open) {
+         document.body.style.overflow = 'hidden';
+       } else {
+         document.body.style.overflow = '';
+       }
      };
    
      // Keep body lock synced if user toggles the <details>
@@ -136,14 +142,20 @@
        if (e.key === 'Escape' && nav.open) setOpen(false);
      });
    
-     // Close when tapping outside
+     // Close when tapping the backdrop (outside the panel)
      document.addEventListener('click', (e) => {
        if (!nav.open) return;
        const target = e.target;
-       if (target instanceof Node && !nav.contains(target)) setOpen(false);
+       const panel = nav.querySelector('.nav-panel');
+       const isSummary = summary && summary.contains(target);
+       
+       // Don't close if clicking the toggle button or inside the panel
+       if (target instanceof Node && !isSummary && panel && !panel.contains(target)) {
+         setOpen(false);
+       }
      });
    
-     // If resizing to desktop width, force close so you never see “open mobile sheet” on desktop
+     // If resizing to desktop width, force close so you never see "open mobile sheet" on desktop
      const mq = window.matchMedia('(max-width: 940px)');
      const onChange = () => {
        if (!mq.matches) setOpen(false);
