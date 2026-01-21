@@ -106,6 +106,32 @@
     }
   }
 
+   function initMobileNav() {
+     const nav = document.getElementById('navMobile');
+     if (!nav) return;
+   
+     // Close when tapping a link
+     nav.addEventListener('click', (e) => {
+       const a = e.target instanceof Element ? e.target.closest('a[href^="#"], a[href^="mailto:"], a[href$=".pdf"]') : null;
+       if (!a) return;
+       nav.removeAttribute('open');
+     });
+   
+     // Close on Escape
+     document.addEventListener('keydown', (e) => {
+       if (e.key === 'Escape') nav.removeAttribute('open');
+     });
+   
+     // Close when tapping outside
+     document.addEventListener('click', (e) => {
+       if (!nav.hasAttribute('open')) return;
+       const target = e.target;
+       if (target instanceof Node && !nav.contains(target)) {
+         nav.removeAttribute('open');
+       }
+     });
+   }
+
   function initTheme() {
     const stored = getStoredTheme();
     const initial = stored || getSystemTheme();
