@@ -588,6 +588,7 @@
 
     initProjects();
     initModal();
+    initMobileNav();
 
     initScrollReveal();
   }
