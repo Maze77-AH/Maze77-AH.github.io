@@ -20,17 +20,8 @@
       .trim()
       .replace(/\s+/g, ' ');
 
-  const safeFocus = (el) => {
-    if (!el) return;
-    try {
-      el.focus({ preventScroll: true });
-    } catch {
-      el.focus();
-    }
-  };
-
   const prefersReducedMotion = () =>
-    window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false;
 
   const debounce = (fn, wait = 120) => {
     let t = null;
@@ -40,11 +31,21 @@
     };
   };
 
-  /* Hash param helpers: supports URLs like:
-     - #projects
-     - #projects?tag=systems&query=ocr
-     - #projects?tag=all
-  */
+  const safeFocus = (el) => {
+    if (!el) return;
+    try {
+      el.focus({ preventScroll: true });
+    } catch {
+      el.focus();
+    }
+  };
+
+  /* -----------------------------
+     Hash param helpers
+     Supports:
+       #projects
+       #projects?tag=systems&query=ocr
+  ------------------------------ */
   function readHashParams() {
     const raw = window.location.hash || '';
     const [anchor, query] = raw.split('?');
@@ -62,7 +63,6 @@
     }
     const q = params.toString();
     const next = q ? `${anchor}?${q}` : `${anchor}`;
-    // replaceState to avoid polluting history with every keystroke
     history.replaceState(null, '', next);
   }
 
@@ -72,10 +72,7 @@
   const themeBtn = $('#themeBtn');
 
   function getSystemTheme() {
-    // Only used when user has not picked a theme yet.
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
-      ? 'light'
-      : 'dark';
+    return window.matchMedia?.('(prefers-color-scheme: light)')?.matches ? 'light' : 'dark';
   }
 
   function getStoredTheme() {
@@ -95,20 +92,17 @@
   }
 
   function applyTheme(theme) {
-    // "dark" = default (no attribute) OR explicit "dark"
-    if (theme === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
-    } else if (theme === 'dark') {
-      // You can either remove the attr or set to dark; either is fine.
-      // We set explicitly for clarity / debugging.
-      document.documentElement.setAttribute('data-theme', 'dark');
+    // [data-theme="light"] and [data-theme="dark"]
+    if (theme === 'light' || theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', theme);
     } else {
       document.documentElement.removeAttribute('data-theme');
     }
 
     if (themeBtn) {
-      const label = theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme';
-      themeBtn.setAttribute('aria-label', label);
+      const isLight = theme === 'light';
+      themeBtn.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
+      themeBtn.setAttribute('aria-pressed', isLight ? 'true' : 'false');
     }
   }
 
@@ -117,26 +111,19 @@
     const initial = stored || getSystemTheme();
     applyTheme(initial);
 
-    // If user never stored a preference, keep synced with system changes.
-    // Once they click the button, stored preference wins.
+    // Sync with system only if user hasn't chosen yet
     const mq = window.matchMedia?.('(prefers-color-scheme: light)');
     if (mq && !stored) {
       const onChange = () => applyTheme(getSystemTheme());
-      // Safari older uses addListener
       mq.addEventListener?.('change', onChange);
-      mq.addListener?.(onChange);
+      mq.addListener?.(onChange); // older Safari
     }
 
-    if (!themeBtn) return;
-
-    themeBtn.addEventListener('click', () => {
+    themeBtn?.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme') || 'dark';
       const next = current === 'light' ? 'dark' : 'light';
       applyTheme(next);
       setStoredTheme(next);
-
-      // Tiny “pressed” affordance for screen readers
-      themeBtn.setAttribute('aria-pressed', next === 'light' ? 'true' : 'false');
     });
   }
 
@@ -158,11 +145,10 @@
     if (!navLinks.length) return;
 
     const idToLink = new Map();
-    for (const a of navLinks) {
+    navLinks.forEach((a) => {
       const id = (a.getAttribute('href') || '').slice(1);
-      if (!id) continue;
-      idToLink.set(id, a);
-    }
+      if (id) idToLink.set(id, a);
+    });
 
     const sections = Array.from(idToLink.keys())
       .map((id) => document.getElementById(id))
@@ -172,27 +158,21 @@
 
     const setCurrent = (id) => {
       for (const [sid, link] of idToLink.entries()) {
-        if (sid === id) {
-          link.setAttribute('aria-current', 'page');
-        } else {
-          link.removeAttribute('aria-current');
-        }
+        if (sid === id) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
       }
     };
 
-    // IntersectionObserver gives a clean + efficient solution.
+    // Prefer IO (no scroll listeners)
     const obs = new IntersectionObserver(
       (entries) => {
-        // Pick the most visible section
+        // Choose most visible intersecting section
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
         if (visible?.target?.id) setCurrent(visible.target.id);
       },
       {
-        root: null,
-        // Trigger when section is meaningfully within viewport
         threshold: [0.2, 0.35, 0.5, 0.65],
         rootMargin: '-18% 0px -70% 0px',
       }
@@ -202,7 +182,58 @@
   }
 
   /* -----------------------------
-     Projects: filter + search (fast + accessible)
+     Smooth anchor scrolling offset (sticky header)
+  ------------------------------ */
+  function initAnchorOffset() {
+    const header = $('header');
+    const getHeaderHeight = () => (header ? Math.ceil(header.getBoundingClientRect().height) : 0);
+
+    function scrollToId(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      const headerHeight = getHeaderHeight();
+      const offset = clamp(headerHeight + 12, 0, 140);
+
+      const y = window.scrollY + el.getBoundingClientRect().top - offset;
+      window.scrollTo({
+        top: y,
+        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      });
+    }
+
+    // Intercept anchor clicks
+    document.addEventListener('click', (e) => {
+      const a = e.target instanceof Element ? e.target.closest('a[href^="#"]') : null;
+      if (!a) return;
+
+      const href = a.getAttribute('href') || '';
+      if (!href.startsWith('#') || href === '#') return;
+
+      // Keep URL behavior
+      const [hash] = href.split('?');
+      const id = hash.slice(1);
+      if (!id) return;
+
+      const target = document.getElementById(id);
+      if (!target) return;
+
+      e.preventDefault();
+      history.pushState(null, '', href);
+      scrollToId(id);
+    });
+
+    // On load with hash
+    window.addEventListener('load', () => {
+      const raw = window.location.hash || '';
+      const [anchor] = raw.split('?');
+      const id = (anchor || '').replace('#', '');
+      if (id) scrollToId(id);
+    });
+  }
+
+  /* -----------------------------
+     Projects: filter + search + deep-link
   ------------------------------ */
   function initProjects() {
     const chips = $$('.chip');
@@ -210,37 +241,30 @@
     const searchInput = $('#projectSearch');
     const noResults = $('#noResults');
 
-    if (!projects.length) return;
+    if (!projects.length) return null;
 
-    // Build an index so search is fast and consistent.
-    // We include title, tags, text content, and data- attributes if present.
     const index = projects.map((el) => {
-      const title = normalize($('h3', el)?.textContent || '');
       const tagsRaw = normalize(el.getAttribute('data-tags') || '');
       const tags = tagsRaw ? tagsRaw.split(/\s+/).filter(Boolean) : [];
-      const text = normalize(el.textContent || '');
-      const role = normalize(el.getAttribute('data-role') || ''); // optional future field
-      return { el, title, tags, text, role };
+
+      // Searchable text: title + body + tags
+      const title = normalize($('h3', el)?.textContent || '');
+      const body = normalize(el.textContent || '');
+      const blob = `${title} ${tags.join(' ')} ${body}`.trim();
+
+      return { el, tags, blob };
     });
 
     let activeFilter = 'all';
     let activeQuery = '';
 
-    function setChipPressed(chipEl) {
+    const setChipPressed = (chipEl) => {
       chips.forEach((c) => c.setAttribute('aria-pressed', 'false'));
-      if (chipEl) chipEl.setAttribute('aria-pressed', 'true');
-    }
+      chipEl?.setAttribute('aria-pressed', 'true');
+    };
 
-    function matchesFilter(item) {
-      if (activeFilter === 'all') return true;
-      return item.tags.includes(activeFilter);
-    }
-
-    function matchesSearch(item) {
-      if (!activeQuery) return true;
-      // Simple includes is good here; index is small and normalized.
-      return item.text.includes(activeQuery);
-    }
+    const matchesFilter = (item) => (activeFilter === 'all' ? true : item.tags.includes(activeFilter));
+    const matchesSearch = (item) => (!activeQuery ? true : item.blob.includes(activeQuery));
 
     function applyFilters({ updateUrl = true } = {}) {
       let visible = 0;
@@ -251,11 +275,8 @@
         if (ok) visible++;
       }
 
-      if (noResults) {
-        noResults.style.display = visible === 0 ? '' : 'none';
-      }
+      if (noResults) noResults.style.display = visible === 0 ? '' : 'none';
 
-      // Update hash params only when we are in projects or user interacts.
       if (updateUrl) {
         const { anchor } = readHashParams();
         const atProjects = anchor === '#projects' || window.location.hash.startsWith('#projects');
@@ -269,12 +290,9 @@
     }
 
     function setFilter(next) {
-      activeFilter = next || 'all';
-
-      // Reflect chip state
+      activeFilter = normalize(next) || 'all';
       const targetChip = chips.find((c) => (c.getAttribute('data-filter') || 'all') === activeFilter);
       setChipPressed(targetChip);
-
       applyFilters();
     }
 
@@ -283,14 +301,9 @@
       applyFilters();
     }
 
-    // Chip click handlers
+    // Chip interaction
     chips.forEach((chip) => {
-      chip.addEventListener('click', () => {
-        const next = chip.getAttribute('data-filter') || 'all';
-        setFilter(next);
-      });
-
-      // Keyboard nicety: Enter/Space triggers click
+      chip.addEventListener('click', () => setFilter(chip.getAttribute('data-filter') || 'all'));
       chip.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -299,12 +312,11 @@
       });
     });
 
-    // Search handlers
+    // Search interaction
     if (searchInput) {
       const onSearch = debounce(() => setQuery(searchInput.value), 80);
       searchInput.addEventListener('input', onSearch);
 
-      // Escape clears input quickly
       searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           searchInput.value = '';
@@ -314,142 +326,177 @@
       });
     }
 
-    // Initialize from hash params if present
+    // Initialize from hash
     const { anchor, params } = readHashParams();
     if (anchor === '#projects' || window.location.hash.startsWith('#projects')) {
       const tag = normalize(params.get('tag') || '');
       const query = params.get('query') || '';
 
-      if (tag) setFilter(tag);
-      else setFilter('all');
+      setFilter(tag || 'all');
 
-      if (searchInput && query) {
+      if (searchInput) {
         searchInput.value = query;
         setQuery(query);
       } else {
+        activeQuery = normalize(query);
         applyFilters({ updateUrl: false });
       }
     } else {
-      // Default initial render
       applyFilters({ updateUrl: false });
     }
 
-    // Expose a small API for other components (modal)
     return {
-      getVisibleProjects: () => index.filter((i) => i.el.style.display !== 'none'),
-      getAllProjects: () => index,
       setFilter,
       setQuery,
+      getAllProjects: () => index,
     };
   }
 
   /* -----------------------------
-     Optional: Project details modal
-     Activates if HTML contains #projectModal structure from the upgraded markup.
-     - Click a project card to open modal (ignores clicking links inside card)
-     - Escape closes
-     - Focus trap inside modal
+     Modal (matches your HTML)
+     Your markup uses:
+       <div class="modal" id="modal" aria-hidden="true" hidden>...</div>
+     And buttons use:
+       <button class="open-modal" data-title="" data-body="" data-tags="" data-links='[...]'>Details</button>
   ------------------------------ */
-  function initProjectModal(projectAPI) {
-    const modal = $('#projectModal');
-    if (!modal) return;
+  function initModal() {
+    const modal = $('#modal');
+    if (!modal) return null;
 
     const backdrop = $('.modal-backdrop', modal);
-    const closeBtn = $('#modalClose', modal);
+    const closeButtons = $$('[data-close="true"]', modal);
 
     const titleEl = $('#modalTitle', modal);
-    const summaryEl = $('#modalSummary', modal);
+    const bodyEl = $('#modalBody', modal);
     const tagsEl = $('#modalTags', modal);
     const linksEl = $('#modalLinks', modal);
-
-    // Track focus
-    let lastFocused = null;
 
     const focusableSelector =
       'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
-    function setModalOpen(open) {
+    let lastFocused = null;
+
+    // Scroll lock that avoids layout shift (desktop) and scroll bleed (mobile-ish)
+    let prevOverflow = '';
+    let prevPaddingRight = '';
+    let locked = false;
+
+    const getScrollbarWidth = () => window.innerWidth - document.documentElement.clientWidth;
+
+    function lockScroll() {
+      if (locked) return;
+      locked = true;
+      prevOverflow = document.body.style.overflow || '';
+      prevPaddingRight = document.body.style.paddingRight || '';
+
+      const sw = getScrollbarWidth();
+      document.body.style.overflow = 'hidden';
+      if (sw > 0) document.body.style.paddingRight = `${sw}px`;
+    }
+
+    function unlockScroll() {
+      if (!locked) return;
+      locked = false;
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPaddingRight;
+    }
+
+    function setOpen(open) {
       if (open) {
         lastFocused = document.activeElement;
-        modal.setAttribute('aria-hidden', 'false');
-        modal.setAttribute('aria-modal', 'true');
-        document.body.style.overflow = 'hidden';
 
-        // Focus the close button or modal title
-        safeFocus(closeBtn || titleEl || modal);
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden', 'false');
+
+        lockScroll();
+
+        // Focus close button if possible
+        const preferred = closeButtons[0] || titleEl || modal;
+        safeFocus(preferred);
       } else {
         modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        modal.hidden = true;
+
+        unlockScroll();
         safeFocus(lastFocused);
       }
     }
 
-    function clearModalContent() {
+    function clearContent() {
       if (titleEl) titleEl.textContent = '';
-      if (summaryEl) summaryEl.textContent = '';
+      if (bodyEl) bodyEl.textContent = '';
       if (tagsEl) tagsEl.innerHTML = '';
       if (linksEl) linksEl.innerHTML = '';
     }
 
-    function buildTag(tagText) {
+    function addTag(text) {
       const span = document.createElement('span');
       span.className = 'tag';
-      span.textContent = tagText;
-      return span;
+      span.textContent = text;
+      tagsEl?.appendChild(span);
     }
 
-    function buildLink(label, href) {
+    function addLink(label, url) {
       const a = document.createElement('a');
       a.className = 'btn';
-      a.href = href;
+      a.href = url;
       a.target = '_blank';
       a.rel = 'noreferrer';
       a.textContent = label;
-      return a;
+      linksEl?.appendChild(a);
+
+      // Optional: close modal after navigating (feels crisp)
+      a.addEventListener('click', () => setOpen(false));
     }
 
-    function openFromProject(projectEl) {
-      clearModalContent();
+    function openFromDataset(btn) {
+      clearContent();
 
-      const h3 = $('h3', projectEl)?.textContent?.trim() || 'Project';
-      const p = $('p', projectEl)?.textContent?.trim() || '';
-      const tags = $$('.tag', projectEl).map((t) => t.textContent.trim()).filter(Boolean);
+      const title = btn.getAttribute('data-title') || 'Project';
+      const body = btn.getAttribute('data-body') || '';
+      const tags = (btn.getAttribute('data-tags') || '')
+        .split('•')
+        .map((s) => s.trim())
+        .filter(Boolean);
 
-      if (titleEl) titleEl.textContent = h3;
-      if (summaryEl) summaryEl.textContent = p;
-
-      if (tagsEl && tags.length) {
-        tags.forEach((t) => tagsEl.appendChild(buildTag(t)));
+      let links = [];
+      try {
+        const raw = btn.getAttribute('data-links') || '[]';
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) links = parsed;
+      } catch {
+        links = [];
       }
 
-      // Grab links inside the card
-      const links = $$('.links a', projectEl)
-        .map((a) => ({
-          label: a.textContent.trim() || 'Link',
-          href: a.getAttribute('href') || '#',
-        }))
-        .filter((x) => x.href && x.href !== '#');
+      if (titleEl) titleEl.textContent = title;
+      if (bodyEl) bodyEl.textContent = body;
+      tags.forEach(addTag);
+      links.forEach((l) => {
+        const label = (l && l.label) ? String(l.label) : 'Link';
+        const url = (l && l.url) ? String(l.url) : '';
+        if (url) addLink(label, url);
+      });
 
-      if (linksEl) {
-        if (links.length) {
-          links.forEach((l) => linksEl.appendChild(buildLink(l.label, l.href)));
-        } else {
-          // If none, show nothing (keeps it clean).
-        }
-      }
-
-      setModalOpen(true);
+      setOpen(true);
     }
 
-    // Click outside closes
-    backdrop?.addEventListener('click', () => setModalOpen(false));
-    closeBtn?.addEventListener('click', () => setModalOpen(false));
+    // Open handlers for any .open-modal buttons
+    document.addEventListener('click', (e) => {
+      const btn = e.target instanceof Element ? e.target.closest('.open-modal') : null;
+      if (!btn) return;
+      e.preventDefault();
+      openFromDataset(btn);
+    });
 
-    // Escape + focus trap
+    // Close handlers
+    backdrop?.addEventListener('click', () => setOpen(false));
+    closeButtons.forEach((b) => b.addEventListener('click', () => setOpen(false)));
+
+    // Keyboard: ESC close + focus trap
     modal.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        setModalOpen(false);
+        setOpen(false);
         return;
       }
 
@@ -470,37 +517,15 @@
       }
     });
 
-    // Attach click handlers to project cards (only if the API exists)
-    const projects = projectAPI?.getAllProjects?.() || [];
-    projects.forEach(({ el }) => {
-      el.style.cursor = 'pointer';
+    // Safety: ensure default is hidden (prevents “Project / X” ghost UI)
+    if (!modal.hasAttribute('aria-hidden')) modal.setAttribute('aria-hidden', 'true');
+    modal.hidden = modal.getAttribute('aria-hidden') !== 'false';
 
-      el.addEventListener('click', (e) => {
-        // Don’t open modal if user clicked a link/button inside the card
-        const target = e.target;
-        if (target instanceof Element) {
-          if (target.closest('a, button, input, textarea, select')) return;
-        }
-        openFromProject(el);
-      });
-
-      // Keyboard open (Enter/Space) if focused
-      el.setAttribute('tabindex', '0');
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openFromProject(el);
-        }
-      });
-    });
-
-    // Ensure initial state is hidden
-    modal.setAttribute('aria-hidden', modal.getAttribute('aria-hidden') || 'true');
+    return { open: () => setOpen(true), close: () => setOpen(false) };
   }
 
   /* -----------------------------
      Optional: Scroll reveal
-     Adds .show to .reveal elements when they enter viewport.
   ------------------------------ */
   function initScrollReveal() {
     const items = $$('.reveal');
@@ -527,68 +552,20 @@
   }
 
   /* -----------------------------
-     Small UX polish: smooth anchor scrolling offset
-     (Because header is sticky.)
-     - If user clicks #something, we scroll slightly above it.
-  ------------------------------ */
-  function initAnchorOffset() {
-    const header = $('header');
-    const headerHeight = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
-
-    function scrollToId(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-
-      const y = window.scrollY + el.getBoundingClientRect().top - clamp(headerHeight + 12, 0, 120);
-      window.scrollTo({
-        top: y,
-        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-      });
-    }
-
-    document.addEventListener('click', (e) => {
-      const a = e.target instanceof Element ? e.target.closest('a[href^="#"]') : null;
-      if (!a) return;
-
-      const href = a.getAttribute('href') || '';
-      if (!href.startsWith('#') || href === '#') return;
-
-      const id = href.slice(1);
-      const target = document.getElementById(id);
-      if (!target) return;
-
-      // Let default behavior update URL, but handle scrolling ourselves
-      e.preventDefault();
-      history.pushState(null, '', href);
-      scrollToId(id);
-    });
-
-    // If page loads with a hash, offset-scroll once
-    window.addEventListener('load', () => {
-      const raw = window.location.hash || '';
-      const [anchor] = raw.split('?');
-      const id = (anchor || '').replace('#', '');
-      if (id) scrollToId(id);
-    });
-  }
-
-  /* -----------------------------
      Boot
   ------------------------------ */
   function boot() {
     initTheme();
     initFooterYear();
     initActiveSectionNav();
-
-    const projectAPI = initProjects();
-
-    // These are optional — they only do anything if matching HTML exists.
-    initProjectModal(projectAPI);
-    initScrollReveal();
     initAnchorOffset();
+
+    initProjects();
+    initModal();
+
+    initScrollReveal();
   }
 
-  // Run when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
