@@ -1297,15 +1297,14 @@ html, body {
 #navMobile.nav-mobile { display: none; }
 
 @media (max-width: 940px){
-  .nav-primary { display: none; }
-  #navMobile.nav-mobile { display: block; }
-
-  /* Full screen overlay panel — ONLY when open */
   #navMobile[open] .nav-panel{
     position: fixed;
     inset: 0;
     width: 100%;
     max-width: none;
+
+    /* Use dynamic viewport height to prevent cut-off */
+    height: 100dvh;
 
     padding:
       calc(14px + env(safe-area-inset-top))
@@ -1315,21 +1314,22 @@ html, body {
     border-radius: 0;
     border: none;
 
-    background: color-mix(in srgb, var(--bg) 65%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-
-    box-shadow: none;
-    overflow: auto;
-    z-index: 1000;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 
     display: flex;
     flex-direction: column;
     gap: 10px;
+
+    /* This centers the “sheet content” so it feels oriented toward the viewer */
+    align-items: center;
   }
 
+  /* Make all direct children fill the centered column nicely */
   #navMobile[open] .nav-panel > *{
-    max-width: 560px;
+    width: min(560px, 100%);
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
@@ -1337,4 +1337,22 @@ html, body {
 @media (max-width: 520px){
   .contact-item .left{ width: 88px; }
   .quick .label{ width: 88px; }
+}
+
+/* === MOBILE MENU: ONLY show panel when <details> is open === */
+@media (max-width: 940px){
+  /* hide by default */
+  #navMobile .nav-panel { display: none !important; }
+
+  /* show only when open */
+  #navMobile[open] .nav-panel { display: flex !important; }
+
+  /* also switch desktop/mobile nav */
+  .nav-primary { display: none; }
+  #navMobile.nav-mobile { display: block; }
+}
+
+@media (min-width: 941px){
+  .nav-primary { display: flex; }
+  #navMobile.nav-mobile { display: none; }
 }
