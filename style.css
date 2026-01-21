@@ -1290,125 +1290,80 @@ html, body {
   position: relative;
 }
 
-/* =============================
-   NAV VISIBILITY (single source of truth)
-   ============================= */
-.nav-primary { display: flex; }
-#navMobile.nav-mobile { display: none; }
+/* =========================================================
+   MOBILE NAV: ABSOLUTE GATE (works even if .nav-panel is misplaced)
+   ========================================================= */
 
 @media (max-width: 940px){
-  #navMobile[open] .nav-panel{
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    max-width: none;
 
-    /* Use dynamic viewport height to prevent cut-off */
-    height: 100dvh;
+  /* 0) Desktop vs Mobile visibility */
+  .nav-primary{ display: none !important; }
+  #navMobile{ display: block !important; }
 
-    padding:
-      calc(14px + env(safe-area-inset-top))
-      var(--gutter)
-      calc(16px + env(safe-area-inset-bottom));
+  /* 1) HARD HIDE every nav panel by default (no assumptions) */
+  .nav-panel{
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 
-    border-radius: 0;
-    border: none;
+  /* 2) Only show the one that belongs to the OPEN details */
+  details[open] .nav-panel{
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
 
-    overflow-y: auto;
+  /* 3) Full screen sheet (prevents cut-off) */
+  details[open] .nav-panel{
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: 100dvh !important;
+
+    overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
 
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    padding:
+      calc(64px + env(safe-area-inset-top))
+      var(--gutter)
+      calc(16px + env(safe-area-inset-bottom)) !important;
 
-    /* This centers the “sheet content” so it feels oriented toward the viewer */
-    align-items: center;
+    border-radius: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+
+    background: color-mix(in srgb, var(--bg) 65%, transparent) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: center !important;
+
+    z-index: 9999 !important;
   }
 
-  /* Make all direct children fill the centered column nicely */
-  #navMobile[open] .nav-panel > *{
-    width: min(560px, 100%);
-    margin-left: auto;
-    margin-right: auto;
+  details[open] .nav-panel > *{
+    width: min(560px, 100%) !important;
   }
-}
 
-/* 5) Make long label column not force width on small screens */
-@media (max-width: 520px){
-  .contact-item .left{ width: 88px; }
-  .quick .label{ width: 88px; }
-}
-
-/* === MOBILE MENU: ONLY show panel when <details> is open === */
-@media (max-width: 940px){
-  /* hide by default */
-  #navMobile .nav-panel { display: none !important; }
-
-  /* show only when open */
-  #navMobile[open] .nav-panel { display: flex !important; }
-
-  /* also switch desktop/mobile nav */
-  .nav-primary { display: none; }
-  #navMobile.nav-mobile { display: block; }
+  /* 4) Keep hamburger “oriented” (fixed) while open */
+  details summary{
+    position: relative !important;
+    z-index: 10000 !important;
+  }
+  details[open] summary{
+    position: fixed !important;
+    top: calc(12px + env(safe-area-inset-top)) !important;
+    right: var(--gutter) !important;
+  }
 }
 
 @media (min-width: 941px){
-  .nav-primary { display: flex; }
-  #navMobile.nav-mobile { display: none; }
-}
-
-/* =============================
-   MOBILE MENU: HARD GATE + STICKY TOGGLE
-   ============================= */
-
-@media (max-width: 940px){
-  /* 1) HARD GATE: panel exists ONLY when <details open> */
-  #navMobile .nav-panel { display: none !important; }
-  #navMobile[open] .nav-panel { display: flex !important; }
-
-  /* 2) Make the hamburger button stay oriented (fixed) while menu is open */
-  #navMobile summary{
-    position: relative;
-    z-index: 1101;
-  }
-  #navMobile[open] summary{
-    position: fixed;
-    top: calc(12px + env(safe-area-inset-top));
-    right: var(--gutter);
-  }
-
-  /* 3) Full screen sheet that can't cut off */
-  #navMobile[open] .nav-panel{
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    max-width: none;
-
-    height: 100dvh;              /* prevents iOS cut-off */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-
-    padding:
-      calc(64px + env(safe-area-inset-top)) /* leave room for fixed hamburger */
-      var(--gutter)
-      calc(16px + env(safe-area-inset-bottom));
-
-    border-radius: 0;
-    border: 0;
-    box-shadow: none;
-
-    background: color-mix(in srgb, var(--bg) 65%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
-
-    z-index: 1100;
-  }
-
-  #navMobile[open] .nav-panel > *{
-    width: min(560px, 100%);
-  }
+  .nav-primary{ display: flex !important; }
+  #navMobile{ display: none !important; }
 }
