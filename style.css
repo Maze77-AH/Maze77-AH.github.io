@@ -1272,3 +1272,108 @@ footer{
   .nav-mobile{ display:none !important; }
   .nav-mobile *{ display:none !important; }
 }
+
+/* 1) iOS horizontal scroll kill-switch */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip; /* better than hidden on modern browsers */
+}
+@supports not (overflow-x: clip) {
+  html, body { overflow-x: hidden; }
+}
+
+/* Make sure nothing can force the viewport wider */
+* { max-width: 100%; }
+
+/* Hero glow can cause “phantom width” on some devices */
+.hero { overflow: hidden; }
+
+/* 2) Better container gutters on mobile + safe-area support */
+:root{
+  --gutter: clamp(14px, 4vw, 24px);
+}
+.container{
+  width: min(var(--container), calc(100% - (2 * var(--gutter))));
+  margin: 0 auto;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* 3) FORCE correct nav visibility (fixes hamburger showing on desktop) */
+.nav-primary { display: block !important; }
+.nav-mobile  { display: none !important; }
+
+@media (max-width: 940px){
+  .nav-primary { display: none !important; }
+  .nav-mobile  { display: block !important; }
+
+  /* On mobile, let header actions wrap nicely */
+  .nav { flex-wrap: wrap; }
+  .nav-actions { min-width: 0; }
+}
+
+/* 4) MOBILE MENU = FULL SCREEN SHEET (fixes “glass not stretching”) */
+.nav-mobile{
+  position: relative;
+}
+
+/* remove dropdown sizing assumptions */
+.nav-panel{
+  box-sizing: border-box;
+}
+
+@media (max-width: 940px){
+  /* Full screen overlay panel */
+  .nav-mobile .nav-panel{
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+
+    padding:
+      calc(14px + env(safe-area-inset-top))
+      var(--gutter)
+      calc(16px + env(safe-area-inset-bottom));
+
+    border-radius: 0;
+    border: none;
+
+    background: color-mix(in srgb, var(--bg) 65%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    box-shadow: none;
+    overflow: auto;
+    z-index: 1000;
+  }
+
+  /* Give the sheet content a nice inner card */
+  .nav-mobile .nav-panel > *{
+    max-width: 560px;
+  }
+
+  .nav-mobile .nav-panel{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nav-mobile .nav-panel-actions{
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  /* When menu is open, prevent page scroll */
+  body.nav-open{
+    overflow: hidden;
+    touch-action: none;
+  }
+}
+
+/* 5) Make long label column not force width on small screens */
+@media (max-width: 520px){
+  .contact-item .left{ width: 88px; }
+  .quick .label{ width: 88px; }
+}
