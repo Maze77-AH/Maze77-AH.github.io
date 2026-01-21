@@ -1233,34 +1233,6 @@ footer{
   transform: translateY(0);
 }
 
-/* -----------------------------
-   Responsive
------------------------------- */
-@media (max-width: 940px){
-  .hero-wrap{ grid-template-columns:1fr; }
-  .projects-grid .project{ grid-column:span 12; }
-  .two-col{ grid-template-columns:1fr; }
-  .contact-grid{ grid-template-columns:1fr; }
-  .nav-actions{ min-width:auto; }
-  .brand{ min-width:auto; }
-  .featured-grid{ grid-template-columns:1fr; }
-  .featured-metrics{ grid-template-columns:1fr; }
-  .stats{ grid-template-columns:1fr; }
-
-  /* Headshot: make it feel intentional on mobile */
-  .hero-mobile-links{ display:flex; }
-}
-
-/* Small phones */
-@media (max-width: 520px){
-  .container{ width: min(var(--container), calc(100% - 28px)); }
-  .nav-list{ gap: 8px; }
-  .btn{ padding: 10px 10px; }
-  .quick .label{ width: 92px; }
-
-  .hero h1{ font-size: clamp(30px, 8vw, 42px); }
-}
-
 /* 1) iOS horizontal scroll kill-switch */
 html, body {
   width: 100%;
@@ -1293,58 +1265,43 @@ html, body {
   position: relative;
 }
 
-/* =========================================================
-   MOBILE NAV: hide desktop nav + prevent letter stacking
-   ========================================================= */
+/* -----------------------------
+   Responsive
+------------------------------ */
+
+/* Hide desktop nav on mobile, show mobile menu */
 @media (max-width: 940px){
-
-  /* 1) Kill the desktop nav list completely on mobile */
-  .nav-list{
-    display: none !important;
+  /* Hide desktop navigation */
+  .nav-primary {
+    display: none;
   }
-
-  /* If your desktop links are NOT .nav-list (common), also hide any primary nav wrapper */
-  .nav-primary{
-    display: none !important;
+  
+  /* Show mobile menu button */
+  .nav-mobile {
+    display: block;
   }
+  
+  .hero-wrap{ grid-template-columns:1fr; }
+  .projects-grid .project{ grid-column:span 12; }
+  .two-col{ grid-template-columns:1fr; }
+  .contact-grid{ grid-template-columns:1fr; }
+  .nav-actions{ min-width:auto; }
+  .brand{ min-width:auto; }
+  .featured-grid{ grid-template-columns:1fr; }
+  .featured-metrics{ grid-template-columns:1fr; }
+  .stats{ grid-template-columns:1fr; }
 
-  /* 2) Let header breathe (prevents squeeze that causes letter stacking) */
-  .nav{
-    flex-wrap: nowrap !important;
-    align-items: center !important;
-  }
-
-  /* Brand was getting squeezed into a tiny width */
-  .brand{
-    min-width: 0 !important;
-    max-width: 60% !important;
-  }
-
-  /* Absolutely prevent letter-by-letter wrapping */
-  .brand-name,
-  .brand strong,
-  .brand-subtitle,
-  .brand span{
-    word-break: normal !important;
-    overflow-wrap: normal !important;
-    white-space: nowrap !important;
-  }
-
-  /* 3) Show your mobile <details> hamburger */
-  #navMobile.nav-mobile{
-    display: block !important;
-    margin-left: auto !important;
-  }
-
-  /* 4) Your action buttons row should not force crazy squeezing */
-  .nav-actions{
-    min-width: 0 !important;
-    gap: 10px !important;
-    flex-wrap: nowrap !important;
-  }
+  /* Headshot: make it feel intentional on mobile */
+  .hero-mobile-links{ display:flex; }
 }
 
-/* Desktop stays normal */
+/* Show desktop nav on desktop, hide mobile menu */
 @media (min-width: 941px){
-  #navMobile.nav-mobile{ display: none !important; }
+  .nav-mobile {
+    display: none;
+  }
+  
+  .nav-primary {
+    display: block;
+  }
 }
