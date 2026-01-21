@@ -1290,18 +1290,18 @@ html, body {
   position: relative;
 }
 
-/* remove dropdown sizing assumptions */
-.nav-panel{
-  box-sizing: border-box;
-}
-
 /* =============================
    NAV VISIBILITY (single source of truth)
    ============================= */
+.nav-primary { display: flex; }
+#navMobile.nav-mobile { display: none; }
 
 @media (max-width: 940px){
-  /* Full screen overlay panel */
-  .nav-mobile .nav-panel{
+  .nav-primary { display: none; }
+  #navMobile.nav-mobile { display: block; }
+
+  /* Full screen overlay panel — ONLY when open */
+  #navMobile[open] .nav-panel{
     position: fixed;
     inset: 0;
     width: 100%;
@@ -1322,29 +1322,14 @@ html, body {
     box-shadow: none;
     overflow: auto;
     z-index: 1000;
-  }
 
-  /* Give the sheet content a nice inner card */
-  .nav-mobile .nav-panel > *{
-    max-width: 560px;
-  }
-
-  .nav-mobile .nav-panel{
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
 
-  .nav-mobile .nav-panel-actions{
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid var(--hairline);
-  }
-
-  /* When menu is open, prevent page scroll */
-  body.nav-open{
-    overflow: hidden;
-    touch-action: none;
+  #navMobile[open] .nav-panel > *{
+    max-width: 560px;
   }
 }
 
