@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="en">
 <head>
-
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -17,10 +16,9 @@
   <meta property="og:title" content="Nicholas Lasagna | Software Engineering Portfolio" />
   <meta property="og:description" content="Systems, tooling, performance, and shipping. Selected projects with impact and write-ups." />
   <meta property="og:url" content="https://www.nicholaslasagna.com/" />
-  <!-- Optional: add og:image later (1200x630). Example: /og.png -->
   <!-- <meta property="og:image" content="https://www.nicholaslasagna.com/og.png" /> -->
 
-  <!-- Twitter/X I don't have one yet -->
+  <!-- Twitter/X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Nicholas Lasagna | Software Engineering Portfolio" />
   <meta name="twitter:description" content="Systems, tooling, performance, and shipping. Selected projects with impact and write-ups." />
@@ -30,7 +28,11 @@
   <meta name="theme-color" content="#0b0f19" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f7f8fb" media="(prefers-color-scheme: light)">
 
-  <!-- Preload fonts -->
+  <link rel="icon" href="/favicon.ico" sizes="any"> -->
+  <link rel="icon" href="/icon.svg" type="image/svg+xml"> -->
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"> -->
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -38,7 +40,7 @@
   <!-- CSS -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Structured data (helps recruiters/search; safe and minimal) -->
+  <!-- Structured data -->
   <script type="application/ld+json">
   {
     "@context":"https://schema.org",
@@ -66,7 +68,7 @@
 </head>
 
 <body>
-  <!-- Accessibility: skip link -->
+  <!-- Accessibility -->
   <a class="skip-link" href="#main">Skip to content</a>
 
   <!-- HEADER / NAV -->
@@ -74,14 +76,14 @@
     <div class="container">
       <div class="nav" role="navigation" aria-label="Primary navigation">
 
-        <!-- Brand / Identity -->
-        <div class="brand" aria-label="Site identity">
+        <!-- Brand -->
+        <a class="brand" href="#top" aria-label="Nicholas Lasagna, home">
           <strong class="brand-name">Nicholas Lasagna</strong>
           <span class="brand-subtitle">Software Engineering Intern Portfolio</span>
-        </div>
+        </a>
 
         <!-- Main nav -->
-        <nav aria-label="Site sections">
+        <nav class="nav-primary" aria-label="Site sections">
           <ul class="nav-list">
             <li><a class="nav-link" href="#featured">Featured</a></li>
             <li><a class="nav-link" href="#projects">Projects</a></li>
@@ -93,7 +95,7 @@
         </nav>
 
         <!-- Actions -->
-        <div class="nav-actions">
+        <div class="nav-actions" aria-label="Header actions">
           <button class="btn ghost" id="themeBtn" type="button" aria-label="Toggle theme" aria-pressed="false">
             <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
               <path d="M12 3v2M12 19v2M4.22 4.22l1.41 1.41M18.36 18.36l1.41 1.41M3 12h2M19 12h2M4.22 19.78l1.41-1.41M18.36 5.64l1.41-1.41"
@@ -104,7 +106,7 @@
             Theme
           </button>
 
-          <a class="btn primary" href="#contact">
+          <a class="btn primary" href="#contact" aria-label="Jump to contact section">
             <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
               <path d="M4 4h16v16H4V4Z" stroke="currentColor" stroke-width="2" />
               <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -119,18 +121,20 @@
 
   <!-- MAIN -->
   <main id="main" class="container" tabindex="-1">
+    <a id="top" class="sr-only" aria-hidden="true"></a>
+
     <!-- HERO -->
     <section class="hero" aria-label="Introduction">
       <div class="hero-wrap">
 
-        <!-- Primary pitch -->
-        <div class="card">
+        <!-- Left: Primary pitch -->
+        <div class="card hero-main">
           <div class="card-inner">
 
             <p class="kicker">Software Engineering • Systems • Performance</p>
 
             <h1>
-              I build reliable, high-performance software 
+              I build reliable, high-performance software
               <span class="accent">systems, tooling, and game infrastructure</span>.
             </h1>
 
@@ -153,7 +157,6 @@
               <span class="pill">Clean, testable code</span>
             </div>
 
-            <!-- Quick credibility: swap these to real numbers as you like -->
             <div class="stats" aria-label="Quick stats">
               <div class="stat">
                 <div class="num">Intern</div>
@@ -172,8 +175,34 @@
           </div>
         </div>
 
-        <!-- Side column: quick facts + top links -->
-        <div class="hero-side" aria-label="Quick information">
+        <!-- Right: Headshot + quick facts + top links -->
+        <aside class="hero-side" aria-label="Quick information">
+
+          <!-- HEADSHOT  -->
+          <figure class="card hero-photo" aria-label="Portrait of Nicholas Lasagna">
+            <div class="card-inner hero-photo-inner">
+              <img
+                src="Images/nicholas.png"
+                alt="Nicholas Lasagna"
+                class="headshot"
+                width="520"
+                height="520"
+                loading="eager"
+                decoding="async"
+                fetchpriority="high"
+              />
+
+              <figcaption class="hero-photo-caption">
+                <div class="hero-photo-name">Nicholas Lasagna</div>
+                <div class="hero-photo-role">Software Engineering Intern Candidate</div>
+
+                <div class="hero-photo-cta" aria-label="Quick actions">
+                  <a class="btn primary" href="mailto:nicholaslasagna@gmail.com">Email</a>
+                  <a class="btn" href="Resume.pdf" target="_blank" rel="noreferrer">Resume</a>
+                </div>
+              </figcaption>
+            </div>
+          </figure>
 
           <div class="card">
             <div class="card-inner quick" aria-label="Quick facts">
@@ -220,7 +249,14 @@
             </div>
           </div>
 
-        </div>
+        </aside>
+      </div>
+
+      <!-- Mobile-only quick links (shown via CSS if you want) -->
+      <div class="hero-mobile-links" aria-label="Quick links">
+        <a class="btn primary" href="mailto:nicholaslasagna@gmail.com">Email</a>
+        <a class="btn" href="Resume.pdf" target="_blank" rel="noreferrer">Resume</a>
+        <a class="btn ghost" href="https://github.com/Maze77-AH" target="_blank" rel="noreferrer">GitHub</a>
       </div>
     </section>
 
@@ -234,7 +270,6 @@
       </div>
 
       <div class="grid featured-grid">
-        <!-- Featured 1 -->
         <article class="card featured-card" aria-label="Featured project: RealChat">
           <div class="card-inner">
             <div class="featured-top">
@@ -249,8 +284,6 @@
 
               <div class="featured-actions">
                 <a class="btn primary" href="https://github.com/Maze77-AH" target="_blank" rel="noreferrer">GitHub</a>
-
-                <!-- Optional: if you later add a modal, these data-attrs plug right in -->
                 <button class="btn ghost open-modal" type="button"
                         data-title="RealChat"
                         data-body="Built a desktop OCR assistant focused on accurate interpretation and reliable UI interaction. Implemented OCR noise filtering, resilient matching for multi-choice layouts, and packaging for distribution. Prioritized correctness and stable behavior over time."
@@ -269,7 +302,6 @@
           </div>
         </article>
 
-        <!-- Featured 2 -->
         <article class="card featured-card" aria-label="Featured project: RealFiction network">
           <div class="card-inner">
             <div class="featured-top">
@@ -313,7 +345,6 @@
         </div>
       </div>
 
-      <!-- Filters -->
       <div class="projects-controls" role="region" aria-label="Project filters">
         <div class="search" role="search">
           <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
@@ -333,23 +364,18 @@
         </div>
       </div>
 
-      <!-- Project grid -->
       <div class="grid projects-grid" id="projectsGrid">
-
         <article class="card project" data-tags="tools systems" aria-label="Project: RealChat">
           <div class="card-inner">
             <h3>RealChat</h3>
-
             <p>
               OCR-based desktop assistant focused on accurately interpreting on-screen prompts and selecting responses.
               Built with attention to latency, OCR noise filtering, and reliable UI interaction.
             </p>
-
             <ul class="impact" aria-label="Impact bullets">
               <li>Designed for stability under imperfect OCR and inconsistent UI layouts.</li>
               <li>Built with a “correctness first” mindset: predictable behavior over time.</li>
             </ul>
-
             <div class="meta" aria-label="Technology tags">
               <span class="tag">Python</span>
               <span class="tag">OCR</span>
@@ -357,7 +383,6 @@
               <span class="tag">API integration</span>
               <span class="tag">Packaging</span>
             </div>
-
             <div class="links" aria-label="Project links">
               <a class="link" href="https://github.com/Maze77-AH" target="_blank" rel="noreferrer">GitHub</a>
               <a class="link" href="#" target="_blank" rel="noreferrer" aria-disabled="true">Demo/Video (soon)</a>
@@ -368,17 +393,14 @@
         <article class="card project" data-tags="infra systems" aria-label="Project: RealFiction Minecraft Network">
           <div class="card-inner">
             <h3>RealFiction Minecraft Network</h3>
-
             <p>
               Multi-server network with performance tuning and plugin ecosystem management.
               Emphasis on stability, scalability, and player experience.
             </p>
-
             <ul class="impact" aria-label="Impact bullets">
               <li>Managed configuration and plugin interactions with a performance-first approach.</li>
               <li>Prioritized uptime and smooth gameplay under real-world load.</li>
             </ul>
-
             <div class="meta" aria-label="Technology tags">
               <span class="tag">Java</span>
               <span class="tag">Folia / Purpur</span>
@@ -386,7 +408,6 @@
               <span class="tag">Performance</span>
               <span class="tag">Ops</span>
             </div>
-
             <div class="links" aria-label="Project links">
               <a class="link" href="https://realfiction.live" target="_blank" rel="noreferrer">Website</a>
               <a class="link" href="https://github.com/Maze77-AH" target="_blank" rel="noreferrer">Related repos</a>
@@ -397,24 +418,20 @@
         <article class="card project" data-tags="infra tools systems" aria-label="Project: Folia Compatibility Work">
           <div class="card-inner">
             <h3>Folia Compatibility Work</h3>
-
             <p>
               Migrated and refactored plugins to meet Folia’s region-threading constraints.
               Reduced async world access violations and improved scheduling correctness.
             </p>
-
             <ul class="impact" aria-label="Impact bullets">
               <li>Refactored unsafe world access patterns into region-safe scheduling models.</li>
               <li>Improved robustness by eliminating thread violations and cleanup bugs.</li>
             </ul>
-
             <div class="meta" aria-label="Technology tags">
               <span class="tag">Java</span>
               <span class="tag">Concurrency</span>
               <span class="tag">Debugging</span>
               <span class="tag">Correctness</span>
             </div>
-
             <div class="links" aria-label="Project links">
               <a class="link" href="https://github.com/Maze77-AH" target="_blank" rel="noreferrer">Code</a>
               <a class="link" href="#" target="_blank" rel="noreferrer" aria-disabled="true">Write-up (soon)</a>
@@ -425,31 +442,26 @@
         <article class="card project" data-tags="games systems" aria-label="Project: Abandoned Horror (UE5)">
           <div class="card-inner">
             <h3>Abandoned Horror (UE5)</h3>
-
             <p>
               Multiplayer game concept and prototyping work in Unreal Engine.
               Focused on reusable gameplay systems and clean content organization.
             </p>
-
             <ul class="impact" aria-label="Impact bullets">
               <li>Built a scalable foundation for gameplay iteration and system reuse.</li>
               <li>Approached prototyping with production organization and documentation.</li>
             </ul>
-
             <div class="meta" aria-label="Technology tags">
               <span class="tag">Unreal Engine 5</span>
               <span class="tag">Gameplay</span>
               <span class="tag">Systems</span>
               <span class="tag">Design docs</span>
             </div>
-
             <div class="links" aria-label="Project links">
               <a class="link" href="#" target="_blank" rel="noreferrer" aria-disabled="true">Design doc (soon)</a>
               <a class="link" href="#" target="_blank" rel="noreferrer" aria-disabled="true">Prototype (soon)</a>
             </div>
           </div>
         </article>
-
       </div>
 
       <div id="noResults" class="no-results" style="display:none;">
@@ -459,7 +471,6 @@
 
     <!-- ABOUT + SKILLS -->
     <section id="about" aria-label="About">
-
       <div class="grid two-col">
         <article class="card about" aria-label="About Nicholas Lasagna">
           <div class="card-inner">
@@ -468,7 +479,6 @@
               I gravitate toward systems, tooling, and performance work; the kind where you prove correctness through careful engineering,
               profiling, and clean abstractions.
             </p>
-
             <p>
               I’ve built production-style projects across desktop tooling, game development, and server infrastructure.
               I’m looking for a <strong>Software Engineering internship</strong> where I can contribute to real codebases,
@@ -508,7 +518,6 @@
           </div>
           <div class="resume-actions">
             <a class="btn primary" href="Resume.pdf" target="_blank" rel="noreferrer">Download</a>
-            <a class="btn" href="#contact">Request a copy</a>
           </div>
         </div>
       </div>
@@ -550,13 +559,10 @@
               </div>
             </div>
 
-            <p class="notes-tip">
-              Prefer email. I typically respond quickly.
-            </p>
+            <p class="notes-tip">Prefer email. I typically respond quickly.</p>
           </div>
         </div>
 
-        <!-- Optional: a second card for availability/notes -->
         <div class="card" aria-label="Availability">
           <div class="card-inner">
             <div class="notes-title">Availability</div>
@@ -588,7 +594,7 @@
     </div>
   </footer>
 
-  <!-- Optional modal scaffolding (works with my earlier JS if you add it) -->
+  <!-- Modal scaffold -->
   <div class="modal" id="modal" aria-hidden="true">
     <div class="modal-backdrop" data-close="true"></div>
     <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
