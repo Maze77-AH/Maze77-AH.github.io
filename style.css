@@ -430,15 +430,6 @@ a, .value, .contact-item div, .toplink-note, .featured-sub, .subtitle, p {
   flex-wrap:wrap;
 }
 
-/* Desktop-first: show desktop nav, hide hamburger */
-.nav-primary { display:block; }
-.nav-mobile  { display:none; }
-
-/* Mobile: hide desktop nav, show hamburger */
-@media (max-width: 940px){
-  .nav-primary { display:none; }
-  .nav-mobile  { display:block; }
-}
 /* -----------------------------
    Layout / Sections
 ------------------------------ */
@@ -1267,12 +1258,6 @@ footer{
   .hero h1{ font-size: clamp(30px, 8vw, 42px); }
 }
 
-/* === HARD LOCK: mobile menu never appears on desktop === */
-@media (min-width: 941px){
-  .nav-mobile{ display:none !important; }
-  .nav-mobile *{ display:none !important; }
-}
-
 /* 1) iOS horizontal scroll kill-switch */
 html, body {
   width: 100%;
@@ -1300,19 +1285,6 @@ html, body {
   padding-right: env(safe-area-inset-right);
 }
 
-/* 3) FORCE correct nav visibility (fixes hamburger showing on desktop) */
-.nav-primary { display: block !important; }
-.nav-mobile  { display: none !important; }
-
-@media (max-width: 940px){
-  .nav-primary { display: none !important; }
-  .nav-mobile  { display: block !important; }
-
-  /* On mobile, let header actions wrap nicely */
-  .nav { flex-wrap: wrap; }
-  .nav-actions { min-width: 0; }
-}
-
 /* 4) MOBILE MENU = FULL SCREEN SHEET (fixes “glass not stretching”) */
 .nav-mobile{
   position: relative;
@@ -1322,6 +1294,10 @@ html, body {
 .nav-panel{
   box-sizing: border-box;
 }
+
+/* =============================
+   NAV VISIBILITY (single source of truth)
+   ============================= */
 
 @media (max-width: 940px){
   /* Full screen overlay panel */
