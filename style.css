@@ -1292,3 +1292,59 @@ html, body {
 .nav-mobile{
   position: relative;
 }
+
+/* =========================================================
+   MOBILE NAV: hide desktop nav + prevent letter stacking
+   ========================================================= */
+@media (max-width: 940px){
+
+  /* 1) Kill the desktop nav list completely on mobile */
+  .nav-list{
+    display: none !important;
+  }
+
+  /* If your desktop links are NOT .nav-list (common), also hide any primary nav wrapper */
+  .nav-primary{
+    display: none !important;
+  }
+
+  /* 2) Let header breathe (prevents squeeze that causes letter stacking) */
+  .nav{
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+  }
+
+  /* Brand was getting squeezed into a tiny width */
+  .brand{
+    min-width: 0 !important;
+    max-width: 60% !important;
+  }
+
+  /* Absolutely prevent letter-by-letter wrapping */
+  .brand-name,
+  .brand strong,
+  .brand-subtitle,
+  .brand span{
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    white-space: nowrap !important;
+  }
+
+  /* 3) Show your mobile <details> hamburger */
+  #navMobile.nav-mobile{
+    display: block !important;
+    margin-left: auto !important;
+  }
+
+  /* 4) Your action buttons row should not force crazy squeezing */
+  .nav-actions{
+    min-width: 0 !important;
+    gap: 10px !important;
+    flex-wrap: nowrap !important;
+  }
+}
+
+/* Desktop stays normal */
+@media (min-width: 941px){
+  #navMobile.nav-mobile{ display: none !important; }
+}
