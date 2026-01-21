@@ -255,6 +255,21 @@ header{
   justify-content:flex-end;
 }
 
+/* Prevent flex/grid children from forcing overflow */
+.nav, .hero-wrap, .grid, .contact-grid, .projects-controls {
+  min-width: 0;
+}
+
+.card, .card-inner, .quick .row, .contact-item, .toplink-row {
+  min-width: 0;
+}
+
+/* Prevent long URLs from pushing layout wider */
+a, .value, .contact-item div, .toplink-note, .featured-sub, .subtitle, p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .nav-link{
   font-size:14px;
   color:var(--muted);
