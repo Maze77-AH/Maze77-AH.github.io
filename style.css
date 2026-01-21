@@ -1356,3 +1356,59 @@ html, body {
   .nav-primary { display: flex; }
   #navMobile.nav-mobile { display: none; }
 }
+
+/* =============================
+   MOBILE MENU: HARD GATE + STICKY TOGGLE
+   ============================= */
+
+@media (max-width: 940px){
+  /* 1) HARD GATE: panel exists ONLY when <details open> */
+  #navMobile .nav-panel { display: none !important; }
+  #navMobile[open] .nav-panel { display: flex !important; }
+
+  /* 2) Make the hamburger button stay oriented (fixed) while menu is open */
+  #navMobile summary{
+    position: relative;
+    z-index: 1101;
+  }
+  #navMobile[open] summary{
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    right: var(--gutter);
+  }
+
+  /* 3) Full screen sheet that can't cut off */
+  #navMobile[open] .nav-panel{
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+
+    height: 100dvh;              /* prevents iOS cut-off */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    padding:
+      calc(64px + env(safe-area-inset-top)) /* leave room for fixed hamburger */
+      var(--gutter)
+      calc(16px + env(safe-area-inset-bottom));
+
+    border-radius: 0;
+    border: 0;
+    box-shadow: none;
+
+    background: color-mix(in srgb, var(--bg) 65%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+
+    z-index: 1100;
+  }
+
+  #navMobile[open] .nav-panel > *{
+    width: min(560px, 100%);
+  }
+}
