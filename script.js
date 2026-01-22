@@ -106,66 +106,53 @@
     }
   }
 
-  function initMobileNav() {
-     const nav = document.getElementById('navMobile');
-     if (!nav) return;
-   
-     const summary = nav.querySelector('summary');
-   
-     const setOpen = (open) => {
-       nav.open = open;
-       summary?.setAttribute('aria-expanded', open ? 'true' : 'false');
-       
-       // Lock/unlock body scroll
-       if (open) {
-         document.body.style.overflow = 'hidden';
-       } else {
-         document.body.style.overflow = '';
-       }
-     };
-   
-     // Keep body lock synced if user toggles the <details>
-     nav.addEventListener('toggle', () => setOpen(nav.open));
-   
-     // Close when tapping a link inside the panel
-     nav.addEventListener('click', (e) => {
-       const a =
-         e.target instanceof Element
-           ? e.target.closest('a[href^="#"], a[href^="mailto:"], a[href$=".pdf"]')
-           : null;
-       if (!a) return;
-       setOpen(false);
-     });
-   
-     // Close on Escape
-     document.addEventListener('keydown', (e) => {
-       if (e.key === 'Escape' && nav.open) setOpen(false);
-     });
-   
-     // Close when tapping the backdrop (outside the panel)
-     document.addEventListener('click', (e) => {
-       if (!nav.open) return;
-       const target = e.target;
-       const panel = nav.querySelector('.nav-panel');
-       const isSummary = summary && summary.contains(target);
-       
-       // Don't close if clicking the toggle button or inside the panel
-       if (target instanceof Node && !isSummary && panel && !panel.contains(target)) {
-         setOpen(false);
-       }
-     });
-   
-     // If resizing to desktop width, force close so you never see "open mobile sheet" on desktop
-     const mq = window.matchMedia('(max-width: 940px)');
-     const onChange = () => {
-       if (!mq.matches) setOpen(false);
-     };
-     mq.addEventListener?.('change', onChange);
-     mq.addListener?.(onChange);
-   
-     // Initial sync
-     setOpen(nav.open);
-   }
+function initMobileNav() {
+  const nav = document.getElementById('navMobile');
+  if (!nav) return;
+
+  const summary = nav.querySelector('summary');
+  const panel = nav.querySelector('.nav-panel');
+
+  const setOpen = (open) => {
+    nav.open = open;
+    summary?.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.style.overflow = open ? 'hidden' : '';
+  };
+
+  // Sync initial ARIA
+  summary?.setAttribute('aria-expanded', nav.open ? 'true' : 'false');
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && nav.open) setOpen(false);
+  });
+
+  // Close on outside click (includes backdrop)
+  document.addEventListener('click', (e) => {
+    if (!nav.open) return;
+    const t = e.target;
+    if (!(t instanceof Node)) return;
+
+    const clickedSummary = summary?.contains(t);
+    const clickedInsidePanel = panel?.contains(t);
+
+    if (!clickedSummary && !clickedInsidePanel) setOpen(false);
+  });
+
+  // Close when clicking a link in the panel
+  nav.addEventListener('click', (e) => {
+    const a = e.target instanceof Element ? e.target.closest('a[href]') : null;
+    if (!a) return;
+    // only close for in-page + external nav links
+    setOpen(false);
+  });
+
+  // If resizing to desktop, force close
+  const mq = window.matchMedia('(max-width: 940px)');
+  const onChange = () => { if (!mq.matches) setOpen(false); };
+  mq.addEventListener?.('change', onChange);
+  mq.addListener?.(onChange); // older Safari fallback
+}
 
   function initTheme() {
     const stored = getStoredTheme();
