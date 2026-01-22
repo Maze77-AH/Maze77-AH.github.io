@@ -578,7 +578,7 @@
       }
     });
 
-    // Safety: ensure default is hidden (prevents “Project / X” ghost UI)
+    // Safety: ensure default is hidden (prevents "Project / X" ghost UI)
     if (!modal.hasAttribute('aria-hidden')) modal.setAttribute('aria-hidden', 'true');
     modal.hidden = modal.getAttribute('aria-hidden') !== 'false';
 
