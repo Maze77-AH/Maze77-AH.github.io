@@ -1401,4 +1401,5 @@ footer{
 /* Mobile-only: show */
 @media (max-width: 940px){
   .nav-mobile{ display:block; }
+  .nav-actions{ display:none !important; }
 }
