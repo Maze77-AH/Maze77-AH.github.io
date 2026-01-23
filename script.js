@@ -120,6 +120,18 @@ function initMobileNav() {
   };
 
   // Sync initial ARIA
+  // Sync scroll lock + ARIA when <details> toggles natively
+  nav.addEventListener('toggle', () => {
+    const open = nav.open;
+    summary?.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+    // Lock scroll while menu is open
+    document.body.style.overflow = open ? 'hidden' : '';
+
+    // Optional: prevent layout shift when scrollbar disappears (desktop)
+    const sw = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.paddingRight = open && sw > 0 ? `${sw}px` : '';
+  });
   summary?.setAttribute('aria-expanded', nav.open ? 'true' : 'false');
 
   // Close on Escape
