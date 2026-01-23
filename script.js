@@ -628,6 +628,7 @@ function initMobileNav() {
      Boot
   ------------------------------ */
   function boot() {
+    initHeaderHeightVar();
     initTheme();
     initFooterYear();
     initActiveSectionNav();
@@ -638,7 +639,6 @@ function initMobileNav() {
     initMobileNav();
 
     initScrollReveal();
-    initHeaderHeightVar();
   }
 
   if (document.readyState === 'loading') {
