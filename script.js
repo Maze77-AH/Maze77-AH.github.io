@@ -638,6 +638,7 @@ function initMobileNav() {
     initMobileNav();
 
     initScrollReveal();
+    initHeaderHeightVar();
   }
 
   if (document.readyState === 'loading') {
