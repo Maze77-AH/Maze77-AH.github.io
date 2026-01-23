@@ -40,6 +40,19 @@
     }
   };
 
+  function initHeaderHeightVar() {
+   const header = document.querySelector('header');
+   if (!header) return;
+   
+   const set = () => {
+    const h = Math.ceil(header.getBoundingClientRect().height);
+     document.documentElement.style.setProperty('--header-h', `${h}px`);
+   };
+   
+   set();
+   window.addEventListener('resize', set, { passive: true });
+   }
+
   /* -----------------------------
      Hash param helpers
      Supports:
