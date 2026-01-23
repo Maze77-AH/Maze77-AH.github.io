@@ -217,9 +217,12 @@ button, input{ font:inherit; color:inherit; }
 ------------------------------ */
 .site-header,
 header{
-  position:sticky;
-  top:0;
-  z-index:100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 100;
 
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -386,7 +389,12 @@ a, .value, .contact-item div, .toplink-note, .featured-sub, .subtitle, p {
 /* -----------------------------
    Layout / Sections
 ------------------------------ */
-main{ padding:28px 0 64px; }
+:root { --header-h: 76px; } /* fallback value */
+
+main{
+  padding-top: calc(var(--header-h) + 28px);
+  padding-bottom: 64px;
+}
 section{ padding:64px 0; }
 
 .section-title{
