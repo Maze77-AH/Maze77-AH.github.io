@@ -1209,13 +1209,16 @@ footer{
     font-size: 11px;
   }
   
-  /* Header stays sticky */
-  .site-header,
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+  /* Header stays fixed */
+   .site-header,
+   header {
+     position: fixed;
+     top: 0;
+     left: 0;
+     right: 0;
+     width: 100%;
+     z-index: 100;
+   }
   
   /* Ensure nav doesn't get too tall */
   .nav {
