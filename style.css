@@ -405,6 +405,14 @@ em{ font-style: italic; }
   background: color-mix(in srgb, var(--bg-elev) 100%, transparent);
 }
 .btn:active{ transform: translateY(1px); }
+
+/* Default icon sizing — applied site-wide */
+.icon{
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  display: inline-block;
+}
 .btn .icon{ width:14px; height:14px; }
 
 .btn.lg{
@@ -1668,8 +1676,27 @@ footer{
 
   .feature-head{ flex-direction: column; align-items: flex-start; gap: 10px; }
   .meta-item dd{ font-size: 22px; }
-  .nav{ height: 60px; }
+  .nav{ height: 60px; gap: 10px; }
   :root{ --header-h: 60px; }
+
+  /* Tighten brand on narrow screens */
+  .brand-name{ font-size: 16px; }
+  .nav-actions .btn.primary{ display: none; }
+  .nav-actions{ gap: 4px; }
+  .nav-actions .btn.icon-only{ width: 36px; height: 36px; }
+  .nav-toggle{ padding: 8px 10px; }
+
+  /* Hero portrait shouldn't dominate on tiny screens */
+  .portrait{ max-width: 320px; align-self: flex-start; }
+  .now .card-inner{ padding: 18px; }
+
+  /* Stack each meta on its own row for clarity */
+  .hero-meta{ grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 420px){
+  .brand-text{ display: none; }
+  .nav{ gap: 6px; }
 }
 
 /* ---------- CRT easter-egg mode (toggled via konami) ---------- */
