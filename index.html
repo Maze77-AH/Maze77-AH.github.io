@@ -84,9 +84,10 @@
 
         <nav class="nav-primary" aria-label="Site sections">
           <ul class="nav-list">
+            <li><a class="nav-link nav-link--shell" href="#shell"><span class="nav-sigil">$</span>Shell</a></li>
             <li><a class="nav-link" href="#work">Work</a></li>
             <li><a class="nav-link" href="#projects">Projects</a></li>
-            <li><a class="nav-link" href="#about">About</a></li>
+            <li><a class="nav-link" href="#principles">Principles</a></li>
             <li><a class="nav-link" href="#stack">Stack</a></li>
             <li><a class="nav-link" href="#contact">Contact</a></li>
           </ul>
@@ -100,8 +101,10 @@
             <span class="label">Menu</span>
           </summary>
           <div class="nav-panel" role="dialog" aria-label="Mobile navigation">
+            <a class="nav-item" href="#shell"><span class="nav-sigil">$</span>Shell <span class="kbd">`</span></a>
             <a class="nav-item" href="#work">Work <span class="kbd">W</span></a>
             <a class="nav-item" href="#projects">Projects <span class="kbd">P</span></a>
+            <a class="nav-item" href="#principles">Principles <span class="kbd">N</span></a>
             <a class="nav-item" href="#about">About <span class="kbd">A</span></a>
             <a class="nav-item" href="#stack">Stack <span class="kbd">S</span></a>
             <a class="nav-item" href="#contact">Contact <span class="kbd">C</span></a>
@@ -262,6 +265,57 @@
           <span>Oracle Cloud</span><span class="dot">·</span>
           <span>Docker</span><span class="dot">·</span>
           <span>Git</span><span class="dot">·</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TERMINAL -->
+    <section id="shell" class="shell-section" aria-label="Interactive terminal">
+      <header class="section-title reveal">
+        <div>
+          <span class="eyebrow mono">~/ — shell</span>
+          <h2 class="display-sm">Or just <em>shell in</em>.</h2>
+        </div>
+        <p class="section-note">
+          A real REPL — not a video, not a screenshot. Try
+          <code class="kbd-inline">help</code>,
+          <code class="kbd-inline">ls</code>, or
+          <code class="kbd-inline">cat projects/nemesisssbu.md</code>.
+          Press <code class="kbd-inline">`</code> anywhere to focus.
+        </p>
+      </header>
+
+      <div class="term reveal" id="term" data-terminal>
+        <div class="term-bar">
+          <div class="term-traffic" aria-hidden="true">
+            <span class="t-dot t-r" data-action="exit" title="close"></span>
+            <span class="t-dot t-y" data-action="minimize" title="minimize"></span>
+            <span class="t-dot t-g" data-action="expand" title="expand"></span>
+          </div>
+          <div class="term-title mono">nicholas@portfolio: <span class="term-cwd" data-cwd>~</span></div>
+          <div class="term-bar-actions">
+            <button class="term-mini" type="button" id="termClear" aria-label="Clear terminal">clear</button>
+            <button class="term-mini" type="button" id="termExpand" aria-label="Toggle full-screen">expand</button>
+          </div>
+        </div>
+        <div class="term-body" id="termBody">
+          <div class="term-output" id="termOutput" role="log" aria-live="polite" aria-label="Terminal output"></div>
+          <form class="term-input-line" id="termForm">
+            <span class="term-prompt mono" aria-hidden="true">
+              <span class="term-user">nicholas</span><span class="term-at">@</span><span class="term-host">portfolio</span><span class="term-colon">:</span><span class="term-path" data-cwd>~</span><span class="term-sigil">$</span>
+            </span>
+            <input
+              class="term-input mono"
+              id="termInput"
+              type="text"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              autocorrect="off"
+              aria-label="Terminal command"
+              placeholder="type 'help' to start"
+            />
+          </form>
         </div>
       </div>
     </section>
@@ -567,11 +621,80 @@
       </div>
     </section>
 
+    <!-- PRINCIPLES -->
+    <section id="principles" class="principles-section" aria-label="Engineering principles">
+      <header class="section-title reveal">
+        <div>
+          <span class="eyebrow mono">03 — Principles</span>
+          <h2 class="display-sm">Six opinions, earned the hard way.</h2>
+        </div>
+        <p class="section-note">
+          Whatever a recruiter remembers about me, I'd rather it be these than a buzzword cloud.
+        </p>
+      </header>
+
+      <ol class="principles">
+        <li class="reveal">
+          <span class="p-num mono">01</span>
+          <h3 class="p-title">Tail latency, not mean.</h3>
+          <p class="p-body">
+            "Average response time looks fine" is the most expensive sentence in production.
+            The user feels p99, not p50. If your p99 is broken, your service is broken — the rest of the histogram is just decoration.
+          </p>
+        </li>
+
+        <li class="reveal">
+          <span class="p-num mono">02</span>
+          <h3 class="p-title">Rust over C++ when getting it wrong panics someone else's machine.</h3>
+          <p class="p-body">
+            Memory safety isn't a "feature" once your code runs unsupervised on thousands of consumer hosts.
+            That's why <a href="#projects" class="ink">NemesisSSBU</a> is Rust — the type system is the operations layer.
+          </p>
+        </li>
+
+        <li class="reveal">
+          <span class="p-num mono">03</span>
+          <h3 class="p-title">Region-safe, not threadsafe-by-luck.</h3>
+          <p class="p-body">
+            "It's been fine for six months" is a coin landing heads. Folia made me write code that's correct because
+            the model says so, not because the test happened to pass. That habit transfers everywhere.
+          </p>
+        </li>
+
+        <li class="reveal">
+          <span class="p-num mono">04</span>
+          <h3 class="p-title">Read the source before guessing the bug.</h3>
+          <p class="p-body">
+            Stack Overflow is a starting point; the runtime's source is where the answer actually lives.
+            Five extra minutes in <code class="mono">grep</code> beats two days arguing with intuition.
+          </p>
+        </li>
+
+        <li class="reveal">
+          <span class="p-num mono">05</span>
+          <h3 class="p-title">Ship behind a known-good baseline.</h3>
+          <p class="p-body">
+            Production is sacred. Every change should be reversible in one command, and every release
+            should compare cleanly against a baseline you trust. If you can't roll back, you can't ship fast.
+          </p>
+        </li>
+
+        <li class="reveal">
+          <span class="p-num mono">06</span>
+          <h3 class="p-title">Tooling is product.</h3>
+          <p class="p-body">
+            The CLI you build for yourself sets the velocity for everything else.
+            Five hours invested in good tooling pays back the rest of the project — and beats heroics later.
+          </p>
+        </li>
+      </ol>
+    </section>
+
     <!-- ABOUT + EDUCATION -->
     <section id="about" aria-label="About and education">
       <header class="section-title reveal">
         <div>
-          <span class="eyebrow mono">03 — About</span>
+          <span class="eyebrow mono">04 — About</span>
           <h2 class="display-sm">A short version, no buzzwords.</h2>
         </div>
       </header>
@@ -635,13 +758,40 @@
           </div>
         </aside>
       </div>
+
+      <!-- Live GitHub activity -->
+      <div class="card activity reveal" id="activity" aria-label="Recent GitHub activity" data-activity>
+        <div class="card-inner">
+          <div class="activity-head">
+            <div>
+              <span class="mono uppercase tiny dim">Live · github</span>
+              <h3 class="activity-title">Recent activity</h3>
+            </div>
+            <div class="activity-legend mono dim">
+              <span>less</span>
+              <span class="legend-cells" aria-hidden="true">
+                <i class="lc lc-0"></i><i class="lc lc-1"></i><i class="lc lc-2"></i><i class="lc lc-3"></i><i class="lc lc-4"></i>
+              </span>
+              <span>more</span>
+            </div>
+          </div>
+          <div class="activity-body">
+            <div class="activity-heatmap" id="heatmap" aria-label="52-week activity heatmap"></div>
+            <ul class="activity-feed" id="feed" aria-label="Recent events"></ul>
+          </div>
+          <div class="activity-foot mono dim">
+            <span data-feed-status>fetching from <code>api.github.com/users/Maze77-AH</code>…</span>
+            <a class="ink" href="https://github.com/Maze77-AH" target="_blank" rel="noreferrer">github.com/Maze77-AH ↗</a>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- STACK -->
     <section id="stack" aria-label="Technical stack">
       <header class="section-title reveal">
         <div>
-          <span class="eyebrow mono">04 — Stack</span>
+          <span class="eyebrow mono">05 — Stack</span>
           <h2 class="display-sm">What I actually reach for.</h2>
         </div>
         <p class="section-note">Honest stack — listed by what I've shipped with, not what I've heard of.</p>
@@ -697,7 +847,7 @@
     <section id="contact" class="contact" aria-label="Contact">
       <header class="section-title reveal">
         <div>
-          <span class="eyebrow mono">05 — Contact</span>
+          <span class="eyebrow mono">06 — Contact</span>
           <h2 class="display-sm">Email is the fastest path.</h2>
         </div>
         <p class="section-note">Internship leads, code review, or just hello — I read everything.</p>
@@ -759,10 +909,21 @@
   <footer role="contentinfo">
     <div class="container foot">
       <div class="foot-left">
-        <pre class="ascii" aria-hidden="true">  ╲╱  Nicholas Lasagna
-  ╱╲  /usr/local/bin/portfolio</pre>
+        <svg class="signature" viewBox="0 0 320 70" width="320" height="70" aria-label="Nicholas Lasagna" role="img">
+          <title>Nicholas Lasagna</title>
+          <path
+            d="M6 50 Q 8 18 14 18 Q 18 18 22 28 Q 26 38 28 48 L 30 18 Q 36 18 42 30 L 46 48 Q 50 22 58 18 Q 66 16 70 26 Q 70 36 60 38 Q 56 38 56 32 Q 60 26 70 26 M 80 18 L 80 50 M 80 50 Q 88 18 96 18 Q 102 18 96 36 L 96 50 M 110 32 Q 118 24 126 32 Q 130 40 122 48 Q 112 50 110 38 M 138 18 Q 148 18 152 30 Q 156 42 146 50 Q 136 50 132 38 M 162 18 Q 172 16 170 30 L 168 50 M 178 26 Q 184 22 192 26 Q 196 32 188 36 Q 182 38 188 44 Q 194 48 200 44 M 210 50 Q 212 18 218 18 Q 222 18 224 28 L 226 48 Q 234 26 242 18 M 252 50 Q 254 18 260 18 Q 268 22 266 36 Q 264 50 254 50 M 280 26 Q 286 22 292 28 Q 296 36 290 42 Q 282 46 280 38 Q 286 32 296 36 L 296 50"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            pathLength="1"
+          />
+        </svg>
         <div class="foot-meta mono dim">
-          © <span id="year"></span> · Hand-written HTML, CSS, JS · No frameworks · GitHub Pages
+          © <span id="year"></span> · Nicholas Lasagna · <span class="dim">/usr/local/bin/portfolio</span><br>
+          Hand-written HTML, CSS, JS · No frameworks · GitHub Pages
         </div>
       </div>
       <div class="foot-right">
