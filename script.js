@@ -65,26 +65,18 @@
     if (y) y.textContent = new Date().getFullYear();
   }
 
-  /* -------- local time -------- */
+  /* -------- local time (pinned to Berkeley / America/Los_Angeles) -------- */
   function initLocalTime() {
     const el = $('[data-local-time]');
-    const zoneEl = $('[data-local-zone]');
     if (!el) return;
 
     const fmt = new Intl.DateTimeFormat([], {
       hour: 'numeric', minute: '2-digit', hour12: true,
+      timeZone: 'America/Los_Angeles',
     });
 
     const tick = () => {
-      const now = new Date();
-      el.textContent = fmt.format(now).replace(' ', '');
-      if (zoneEl) {
-        try {
-          const parts = new Intl.DateTimeFormat([], { timeZoneName: 'short' }).formatToParts(now);
-          const tz = parts.find(p => p.type === 'timeZoneName')?.value || 'local';
-          zoneEl.textContent = tz;
-        } catch {}
-      }
+      el.textContent = fmt.format(new Date()).replace(' ', '');
     };
     tick();
     setInterval(tick, 30 * 1000);
@@ -783,28 +775,31 @@ type 'help' to see commands, or 'tour' for a guided walk.
 
 start somewhere:
   cat about.md
+  cat projects/realfiction.md
+  cat projects/united-exams.md
   cat projects/nemesisssbu.md
   cat principles.md
   ls projects/
   neofetch
 `;
 
-    const ABOUT = `nicholas lasagna — software engineer.
+    const ABOUT = `nicholas lasagna — software engineering intern candidate.
 
-cs at texas tech university (b.s. expected may 2027). math minor.
-gpa 3.56 / 4.00. currently in berkeley, california.
+cs at texas tech university (b.s. expected may 2027). currently in
+berkeley, california / bay area.
 
-i started shipping software at 16 by co-founding an indie game studio with
-a small distributed team — three years of engine-level work in unreal
-engine 4/5, mostly in c++ and c#.
+i started building production-style software early through indie game
+development with a small distributed team — three years of engine-level
+work in unreal engine 4/5, mostly in c++ and c#.
 
-these days my time goes into the layer of the stack where the abstraction
-breaks: rust runtime tooling, distributed game backends on linux, and
-low-level work in c and x64 assembly.
+from there i moved deeper into systems, runtime tooling, infrastructure,
+and backend / platform work. my energy goes into the layer of the stack
+where the abstraction breaks — servers, runtimes, tooling, and real
+user-facing systems.
 
 looking for: summer 2026 swe internship.
-strongest fits: systems, runtime, distributed services, performance,
-infrastructure, game tech.
+strongest fits: systems, runtime / tooling, distributed services,
+performance, infrastructure, backend / platform, game tech.
 `;
 
     const PRINCIPLES = `engineering principles — six opinions, earned the hard way.
@@ -831,28 +826,29 @@ infrastructure, game tech.
     the cli you build for yourself sets the velocity for everything else.
 `;
 
-    const STACK = `languages
+    const STACK = `comfortable shipping with
   rust          ── runtime, tooling
-  c++ / c       ── ue5, low-level
   java          ── backends, plugins
+  typescript    ── next.js, web
   python        ── ocr, automation
+  c++ / c       ── ue5, low-level
   c#            ── ue / unity
-  javascript    ── web, tooling
-  x64 assembly  ── masm, study
 
-systems & tools
-  linux (ubuntu)  ── daily driver, prod
-  oracle cloud    ── realfiction host
-  docker          ── isolation, deploy
-  git             ── distributed workflow
-  maven / gradle  ── jvm builds
-  cargo           ── rust toolchain
+systems & infra
+  linux (ubuntu)     ── daily driver, prod
+  oracle cloud       ── realfiction host
+  mariadb / postgres ── realfiction · supabase
+  redis              ── cache, state
+  docker             ── isolation, deploy
+  git · cloudflare   ── distributed wf · dns, edge
 
-engines & domains
-  unreal engine 4/5 ── 3 yrs, engine-level
-  unity             ── prototype work
-  folia / purpur    ── region-threaded jvm
-  blender           ── asset pipeline
+web · game · currently deepening
+  next.js · supabase     ── united exams, heroic submission
+  postgresql · rls       ── schema, policies, triggers
+  tailwind · shadcn/ui   ── ui systems
+  velocity · folia       ── jvm proxies, region-threaded
+  unreal engine 4/5      ── gameplay systems, engine
+  assembly · architecture ── risc-v, masm/x86, study
 `;
 
     const CONTACT = `contact
@@ -867,26 +863,29 @@ engines & domains
 shortcut: 'email' opens your mail client, 'resume' downloads the pdf.
 `;
 
-    const EDU = `texas tech university   — b.s. computer science (math minor)
+    const EDU = `texas tech university   — b.s. computer science
   enrolled  fall 2023
   graduate  may 2027
-  gpa       3.56 / 4.00
+  coursework  systems, architecture, languages, math
 `;
 
-    const REALFIC = `realfiction — distributed game server platform        [ 2023 → live ]
+    const REALFIC = `realfiction — live game server infrastructure        [ 2023 → live ]
 
-stack: java · folia/purpur · oracle cloud · ubuntu
+stack: java · ubuntu · oracle cloud · velocity · folia/purpur · mariadb · redis
 
-multi-server java backend hosted on oracle cloud running a live,
-user-facing distributed system. designed, deployed, and currently
-operated end to end — networking, permissions, plugin ecosystem
-management, performance tuning, monitoring, and 3 a.m. triage.
+a live, user-facing multi-server java game network running on ubuntu /
+oracle cloud free-tier infrastructure. designed, deployed, and currently
+operated end to end. setup includes a velocity proxy, multiple server
+nodes (lobby / arcade / smp / anarchy), mariadb + redis, a reverse proxy
+layer, and a folia / purpur / pufferfish style runtime.
 
 highlights:
+  → proxy routing, plugin interoperability, database access,
+    server configuration, permissions, deployment hygiene.
   → region-threaded plugin work on folia: refactored unsafe world
     access into region-safe scheduling; cut async-violation crashes.
-  → tuned jvm, networking, and chunk pipelines under real player load;
-    treated tail latency as the actual kpi, not mean.
+  → tuned jvm, proxy, and chunk / database pipelines under real player
+    load; treated tail latency as the actual kpi, not mean.
   → owned config hygiene, plugin compatibility, observability —
     every change shipped behind a known-good baseline.
 
@@ -1604,11 +1603,26 @@ no scheduled maintenance windows. occasional production fires.`);
         headers: { 'Accept': 'application/vnd.github+json' }
       });
       if (!r.ok) throw new Error('api ' + r.status);
-      events = await r.json();
-      if (!Array.isArray(events)) events = [];
-      if (status) status.innerHTML = `${events.length} recent events · refreshed <span data-refreshed>just now</span>`;
+      let raw = await r.json();
+      if (!Array.isArray(raw)) raw = [];
+      // Drop empty / no-op pushes and other meaningless events
+      events = raw.filter(e => {
+        if (e.type === 'PushEvent') {
+          const n = e.payload?.commits?.length || e.payload?.distinct_size || 0;
+          return n > 0;
+        }
+        // Keep meaningful event types
+        return ['CreateEvent','PullRequestEvent','IssuesEvent','ReleaseEvent','ForkEvent','PublicEvent','CommitCommentEvent'].includes(e.type);
+      });
+      if (status) {
+        if (events.length) {
+          status.innerHTML = `${events.length} recent event${events.length === 1 ? '' : 's'} · refreshed <span data-refreshed>just now</span>`;
+        } else {
+          status.innerHTML = `<span class="dim">no recent public commits — most current work lives in private repos.</span>`;
+        }
+      }
     } catch (err) {
-      if (status) status.innerHTML = `<span class="dim">offline / rate-limited — showing sample.</span>`;
+      if (status) status.innerHTML = `<span class="dim">offline / rate-limited — see <a class="ink" href="https://github.com/${GITHUB_USER}" target="_blank" rel="noreferrer">github.com/${GITHUB_USER}</a>.</span>`;
     }
 
     /* ---- populate heatmap ---- */
