@@ -1780,9 +1780,277 @@ no scheduled maintenance windows. occasional production fires.`);
     obs.observe(sig);
   }
 
+  /* ==========================================================================
+     ENTRANCE — curtain that drops on first paint
+     ========================================================================== */
+  function initEntrance() {
+    const el = document.getElementById('entrance');
+    if (!el) return;
+
+    if (reduceMotion()) {
+      // Skip animation entirely
+      el.remove();
+      document.body.classList.add('entrance-done');
+      return;
+    }
+
+    let seen = false;
+    try { seen = sessionStorage.getItem('entrance-done') === '1'; } catch {}
+
+    if (seen) {
+      el.remove();
+      document.body.classList.add('entrance-done');
+      return;
+    }
+
+    // Wait until the first paint settles, then leave
+    const minDuration = 700;
+    const startedAt = performance.now();
+    const finish = () => {
+      const elapsed = performance.now() - startedAt;
+      const wait = Math.max(0, minDuration - elapsed);
+      setTimeout(() => {
+        el.classList.add('is-leaving');
+        setTimeout(() => {
+          document.body.classList.add('entrance-done');
+          el.remove();
+          try { sessionStorage.setItem('entrance-done', '1'); } catch {}
+        }, 480);
+      }, wait);
+    };
+
+    if (document.readyState === 'complete') finish();
+    else window.addEventListener('load', finish, { once: true });
+  }
+
+  /* ==========================================================================
+     HERO WORD REVEAL — split text, stagger
+     ========================================================================== */
+  function initWordReveal() {
+    const targets = $$('[data-reveal-words]');
+    if (!targets.length) return;
+
+    targets.forEach(target => {
+      const stride = 60; // ms between words
+      let idx = 0;
+
+      // Walk children: split text nodes into per-word spans, leave element
+      // children (em, span.cursor-blink) alone but still wrap their text content.
+      const wrapText = (text, startIdx) => {
+        const frag = document.createDocumentFragment();
+        const parts = text.split(/(\s+)/);
+        let i = startIdx;
+        parts.forEach(part => {
+          if (!part) return;
+          if (/^\s+$/.test(part)) {
+            frag.appendChild(document.createTextNode(part));
+            return;
+          }
+          const wrap = document.createElement('span');
+          wrap.className = 'w';
+          const inner = document.createElement('span');
+          inner.textContent = part;
+          inner.style.setProperty('--word-delay', `${i * stride}ms`);
+          wrap.appendChild(inner);
+          frag.appendChild(wrap);
+          i++;
+        });
+        return { frag, next: i };
+      };
+
+      const walk = (node) => {
+        const kids = Array.from(node.childNodes);
+        for (const kid of kids) {
+          if (kid.nodeType === Node.TEXT_NODE) {
+            if (!kid.textContent.trim()) continue;
+            const { frag, next } = wrapText(kid.textContent, idx);
+            idx = next;
+            kid.replaceWith(frag);
+          } else if (kid.nodeType === Node.ELEMENT_NODE) {
+            // Skip the cursor blink — it shouldn't animate as a word
+            if (kid.classList?.contains('cursor-blink')) continue;
+            walk(kid);
+          }
+        }
+      };
+
+      walk(target);
+    });
+  }
+
+  /* ==========================================================================
+     PINNED PRINCIPLES — sticky scroll stage
+     ========================================================================== */
+  function initPinnedPrinciples() {
+    const section = document.getElementById('principles');
+    if (!section || !section.classList.contains('principles-pinned')) return;
+    const container = document.getElementById('pinContainer');
+    const stage = section.querySelector('.pin-stage');
+    const items = $$('.principles > li', section);
+    const cur = section.querySelector('.pin-cur');
+    const fill = document.getElementById('pinBarFill');
+    if (!container || !stage || items.length === 0) return;
+
+    const mq = window.matchMedia('(max-width: 940px)');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const setActive = (n) => {
+      const idx = clamp(n, 0, items.length - 1);
+      items.forEach((el, i) => el.classList.toggle('is-active', i === idx));
+      if (cur) cur.textContent = String(idx + 1).padStart(2, '0');
+      if (fill) fill.style.width = `${((idx + 1) / items.length) * 100}%`;
+      section.classList.toggle('pin-done', idx === items.length - 1);
+    };
+
+    const isPinDisabled = () => mq.matches || reduced.matches;
+
+    const onScroll = () => {
+      if (isPinDisabled()) {
+        items.forEach(el => el.classList.add('is-active'));
+        return;
+      }
+      const rect = container.getBoundingClientRect();
+      const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 64;
+      const stageH = window.innerHeight - headerH;
+
+      const total = container.offsetHeight - stageH;
+      const traveled = clamp(-rect.top, 0, total);
+      const progress = total > 0 ? (traveled / total) : 0;
+
+      // Map progress to a discrete principle. Use a fractional with rounding so
+      // the active item changes near each step boundary.
+      const idx = Math.min(items.length - 1, Math.floor(progress * items.length + 0.0001));
+      setActive(idx);
+    };
+
+    // Initialize: only first item active
+    items.forEach((el, i) => el.classList.toggle('is-active', i === 0));
+    if (cur) cur.textContent = '01';
+    if (fill) fill.style.width = `${(1 / items.length) * 100}%`;
+
+    if (isPinDisabled()) {
+      items.forEach(el => el.classList.add('is-active'));
+      return;
+    }
+
+    let raf = 0;
+    const tick = () => {
+      raf = 0;
+      onScroll();
+    };
+    window.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(tick);
+    }, { passive: true });
+    window.addEventListener('resize', tick, { passive: true });
+    onScroll();
+
+    // React if user toggles reduced-motion / mobile breakpoint mid-session
+    const onMq = () => {
+      if (isPinDisabled()) {
+        items.forEach(el => el.classList.add('is-active'));
+      } else {
+        onScroll();
+      }
+    };
+    mq.addEventListener?.('change', onMq);
+    reduced.addEventListener?.('change', onMq);
+  }
+
+  /* ==========================================================================
+     SECTION PROGRESS RAIL — right-edge dots
+     ========================================================================== */
+  function initSectionRail() {
+    const rail = document.getElementById('rail');
+    if (!rail) return;
+    const links = $$('a[data-rail-id]', rail);
+    if (!links.length) return;
+
+    const map = new Map();
+    links.forEach(a => {
+      const id = a.getAttribute('data-rail-id');
+      const target = id ? document.getElementById(id) : null;
+      if (target) map.set(target, a);
+    });
+
+    const setCurrent = (el) => {
+      links.forEach(a => a.removeAttribute('data-current'));
+      const a = map.get(el);
+      a?.setAttribute('data-current', 'true');
+    };
+
+    const obs = new IntersectionObserver(entries => {
+      const visible = entries
+        .filter(e => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible?.target) setCurrent(visible.target);
+    }, {
+      threshold: [0.18, 0.4, 0.6],
+      rootMargin: '-25% 0px -55% 0px',
+    });
+
+    map.forEach((_, el) => obs.observe(el));
+  }
+
+  /* ==========================================================================
+     CURSOR-FOLLOW CHIP — agency-style hover preview
+     ========================================================================== */
+  function initCursorChip() {
+    const chip = document.getElementById('cursorChip');
+    if (!chip) return;
+    if (reduceMotion()) return;
+    if (matchMedia('(pointer: coarse)').matches) return;
+
+    const text = $('.cc-text', chip);
+    const targets = $$('.project, .feature, .stack-card');
+
+    let raf = 0, x = 0, y = 0, tx = 0, ty = 0, active = false;
+
+    const onMove = (e) => {
+      tx = e.clientX; ty = e.clientY;
+      if (!raf) raf = requestAnimationFrame(loop);
+    };
+    const loop = () => {
+      // Subtle lerp for buttery feel
+      x += (tx - x) * 0.32;
+      y += (ty - y) * 0.32;
+      chip.style.transform = `translate(calc(${x}px - 50%), calc(${y - 28}px - 50%)) scale(${active ? 1 : 0.7})`;
+      raf = 0;
+      if (active && (Math.abs(tx - x) > 0.2 || Math.abs(ty - y) > 0.2)) {
+        raf = requestAnimationFrame(loop);
+      }
+    };
+
+    const setActive = (label) => {
+      active = !!label;
+      if (label && text) text.textContent = label;
+      chip.classList.toggle('on', active);
+      if (active && !raf) raf = requestAnimationFrame(loop);
+    };
+
+    targets.forEach(el => {
+      const label = el.classList.contains('feature')
+        ? 'Read'
+        : el.classList.contains('stack-card')
+        ? '—'
+        : 'Open';
+
+      el.addEventListener('mouseenter', () => setActive(label));
+      el.addEventListener('mouseleave', () => setActive(false));
+      el.addEventListener('mousemove', onMove);
+    });
+
+    // If user moves outside any target, ensure we lerp the chip back to mouse
+    document.addEventListener('mousemove', e => {
+      tx = e.clientX; ty = e.clientY;
+    }, { passive: true });
+  }
+
   /* -------- boot -------- */
   function boot() {
     initHeaderHeight();
+    initEntrance();
+    initWordReveal();
     initTheme();
     initYear();
     initLocalTime();
@@ -1790,6 +2058,7 @@ no scheduled maintenance windows. occasional production fires.`);
     initMagnetic();
     initAnchorOffset();
     initActiveSection();
+    initSectionRail();
     initMobileNav();
 
     const projects = initProjects();
@@ -1801,10 +2070,12 @@ no scheduled maintenance windows. occasional production fires.`);
     initKeyboardNav(projects);
     initKonami();
 
-    // New
+    // New: terminal, signature, github, pinned principles, cursor chip
     initTerminal();
     initSignature();
     initGithubActivity();
+    initPinnedPrinciples();
+    initCursorChip();
 
     consoleSignature();
   }

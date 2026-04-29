@@ -62,9 +62,37 @@
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
 
+  <!-- Page-load entrance curtain -->
+  <div class="entrance" id="entrance" aria-hidden="true">
+    <div class="entrance-inner">
+      <svg class="entrance-mark" viewBox="0 0 36 36" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="29" height="29" rx="6"/>
+        <path d="M11 25V11l14 14V11"/>
+      </svg>
+      <span class="entrance-name">Nicholas&nbsp;Lasagna</span>
+    </div>
+  </div>
+
   <!-- Ambient grain overlay -->
   <div class="grain" aria-hidden="true"></div>
   <div class="cursor-glow" aria-hidden="true"></div>
+
+  <!-- Cursor-follow project chip -->
+  <div class="cursor-chip" id="cursorChip" aria-hidden="true">
+    <span class="cc-text">Open</span>
+    <span class="cc-arrow" aria-hidden="true">→</span>
+  </div>
+
+  <!-- Right-edge section progress rail -->
+  <aside class="rail" id="rail" aria-label="Section progress">
+    <a href="#shell" data-rail-id="shell"><span class="dot"></span><span class="lbl mono">Shell</span></a>
+    <a href="#work" data-rail-id="work"><span class="dot"></span><span class="lbl mono">Work</span></a>
+    <a href="#projects" data-rail-id="projects"><span class="dot"></span><span class="lbl mono">Projects</span></a>
+    <a href="#principles" data-rail-id="principles"><span class="dot"></span><span class="lbl mono">Principles</span></a>
+    <a href="#about" data-rail-id="about"><span class="dot"></span><span class="lbl mono">About</span></a>
+    <a href="#stack" data-rail-id="stack"><span class="dot"></span><span class="lbl mono">Stack</span></a>
+    <a href="#contact" data-rail-id="contact"><span class="dot"></span><span class="lbl mono">Contact</span></a>
+  </aside>
 
   <header class="site-header" role="banner">
     <div class="container">
@@ -155,10 +183,9 @@
             </span>
           </p>
 
-          <h1 class="display reveal">
+          <h1 class="display reveal-words" data-reveal-words>
             I write software where
-            <em class="accent">the details matter</em>
-            <span class="cursor-blink" aria-hidden="true">_</span>
+            <em class="accent">the details matter</em><span class="cursor-blink" aria-hidden="true">_</span>
           </h1>
 
           <p class="lede reveal">
@@ -719,7 +746,7 @@
     </section>
 
     <!-- PRINCIPLES -->
-    <section id="principles" class="principles-section" aria-label="Engineering principles">
+    <section id="principles" class="principles-section principles-pinned" aria-label="Engineering principles">
       <header class="section-title reveal">
         <div>
           <span class="eyebrow mono">03 — Principles</span>
@@ -729,6 +756,13 @@
           Whatever a recruiter remembers about me, I'd rather it be these than a buzzword cloud.
         </p>
       </header>
+
+      <div class="pin-container" id="pinContainer">
+        <div class="pin-stage">
+          <div class="pin-meta" aria-hidden="true">
+            <span class="pin-cur mono">01</span>
+            <span class="pin-of mono">/ 06</span>
+          </div>
 
       <ol class="principles">
         <li class="reveal">
@@ -785,6 +819,13 @@
           </p>
         </li>
       </ol>
+
+          <div class="pin-bar" aria-hidden="true">
+            <span class="pin-bar-fill" id="pinBarFill"></span>
+          </div>
+          <div class="pin-hint mono" aria-hidden="true">scroll</div>
+        </div>
+      </div>
     </section>
 
     <!-- ABOUT + EDUCATION -->

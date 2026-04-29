@@ -2183,6 +2183,401 @@ footer{
   animation-timing-function: cubic-bezier(.2,.7,.2,1);
 }
 
+/* ==========================================================================
+   ENTRANCE — page-load curtain (Thoughtlab-style first beat)
+   ========================================================================== */
+.entrance{
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  color: var(--text);
+}
+.entrance-inner{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: entr-in 380ms cubic-bezier(.2,.7,.2,1) 80ms forwards;
+}
+.entrance-mark{
+  color: var(--accent);
+  opacity: 0;
+  transform: scale(0.92);
+  animation: entr-mark 420ms cubic-bezier(.2,.7,.2,1) 60ms forwards;
+}
+.entrance-name{
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 44px);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+@keyframes entr-in{
+  to{ opacity: 1; transform: none; }
+}
+@keyframes entr-mark{
+  to{ opacity: 1; transform: none; }
+}
+
+.entrance.is-leaving{
+  animation: entr-out 460ms cubic-bezier(.6,.05,.2,1) forwards;
+}
+@keyframes entr-out{
+  0%   { opacity: 1; }
+  60%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-8%); pointer-events: none; }
+}
+.entrance.is-leaving .entrance-inner{
+  animation: entr-inner-out 460ms cubic-bezier(.6,.05,.2,1) forwards;
+}
+@keyframes entr-inner-out{
+  to{ opacity: 0; transform: translateY(-22px); }
+}
+body.entrance-done .entrance{
+  display: none !important;
+}
+@media (prefers-reduced-motion: reduce){
+  .entrance{ display: none !important; }
+}
+
+/* ==========================================================================
+   HERO WORD REVEAL
+   ========================================================================== */
+.reveal-words{
+  /* clip the rising words */
+}
+.reveal-words .w{
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.reveal-words .w > span{
+  display: inline-block;
+  transform: translateY(110%);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+body.entrance-done .reveal-words .w > span,
+.reveal-words.show .w > span{
+  animation: word-rise 720ms cubic-bezier(.2,.8,.2,1) both;
+  animation-delay: var(--word-delay, 0ms);
+}
+@keyframes word-rise{
+  from{ transform: translateY(110%); opacity: 0; }
+  to  { transform: translateY(0);    opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce){
+  .reveal-words .w > span{ transform: none; opacity: 1; animation: none; }
+}
+
+/* Cursor blink doesn't get the word treatment */
+.reveal-words .cursor-blink{
+  display: inline-block;
+  opacity: 1;
+  transform: none;
+}
+
+/* ==========================================================================
+   PINNED PRINCIPLES — desktop showpiece
+   ========================================================================== */
+.principles-pinned .pin-container{
+  /* 6 principles + a small lead-out — total scrollable height */
+  position: relative;
+  height: calc(680vh);
+  margin-top: 10px;
+}
+.principles-pinned .pin-stage{
+  position: sticky;
+  top: var(--header-h);
+  height: calc(100vh - var(--header-h));
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-items: center;
+  padding: clamp(20px, 4vh, 50px) 0;
+  /* keep the pin layered ABOVE neighbouring sections during scroll */
+  overflow: hidden;
+}
+
+/* Override the desktop two-col grid when pinned — items overlap & crossfade */
+.principles-pinned .principles{
+  position: relative;
+  display: block;
+  border: 0;
+  margin: 0;
+  height: 100%;
+  align-self: stretch;
+}
+.principles-pinned .principles li{
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 70ch;
+  margin: 0 auto;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition:
+    opacity 480ms cubic-bezier(.2,.7,.2,1),
+    transform 600ms cubic-bezier(.2,.7,.2,1);
+}
+.principles-pinned .principles li::before{
+  content: none; /* drop the two-col hover background */
+}
+.principles-pinned .principles li.is-active{
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.principles-pinned .principles .p-num{
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+.principles-pinned .principles .p-title{
+  font-size: clamp(38px, 5.4vw, 72px);
+  line-height: 0.98;
+  margin-bottom: 22px;
+  text-wrap: balance;
+}
+.principles-pinned .principles .p-body{
+  font-size: clamp(15px, 1.3vw, 18px);
+  color: var(--text-2);
+  max-width: 60ch;
+  line-height: 1.6;
+}
+
+/* Counter and progress */
+.pin-meta{
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.pin-cur{
+  font-size: 24px;
+  color: var(--text);
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  display: inline-block;
+  min-width: 30px;
+}
+.pin-of{
+  color: var(--muted-2);
+}
+.pin-bar{
+  height: 1px;
+  background: var(--line);
+  position: relative;
+  overflow: hidden;
+}
+.pin-bar-fill{
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  background: var(--accent);
+  transition: width 220ms cubic-bezier(.2,.7,.2,1);
+}
+.pin-hint{
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--muted-2);
+  text-transform: uppercase;
+  margin-top: 12px;
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.9;
+}
+.pin-hint::after{
+  content: "↓";
+  font-size: 12px;
+  animation: pin-hint-bob 1.6s ease-in-out infinite;
+}
+@keyframes pin-hint-bob{
+  0%,100%{ transform: translateY(0); opacity: 1; }
+  50%    { transform: translateY(3px); opacity: 0.6; }
+}
+.principles-pinned.pin-done .pin-hint{ opacity: 0.0; transition: opacity 220ms; }
+
+/* Mobile: revert to the existing two-col grid (single column) — no pinning */
+@media (max-width: 940px){
+  .principles-pinned .pin-container{
+    height: auto;
+  }
+  .principles-pinned .pin-stage{
+    position: static;
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+  .principles-pinned .principles{
+    display: grid;
+    grid-template-columns: 1fr;
+    height: auto;
+    border-top: 1px solid var(--line);
+  }
+  .principles-pinned .principles li{
+    position: static;
+    inset: auto;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--line);
+    max-width: none;
+    margin: 0;
+  }
+  .principles-pinned .principles .p-title{
+    font-size: clamp(22px, 4vw, 30px);
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+  .principles-pinned .principles .p-num{
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+  .principles-pinned .principles .p-body{
+    font-size: 14.5px;
+    line-height: 1.65;
+  }
+  .pin-meta, .pin-bar, .pin-hint{ display: none; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .principles-pinned .pin-container{ height: auto; }
+  .principles-pinned .pin-stage{ position: static; height: auto; display: block; }
+  .principles-pinned .principles{ display: grid; grid-template-columns: 1fr; }
+  .principles-pinned .principles li{ position: static; opacity: 1; transform: none; padding: 26px 0; border-bottom: 1px solid var(--line); }
+  .pin-meta, .pin-bar, .pin-hint{ display: none; }
+}
+
+/* ==========================================================================
+   CURSOR-FOLLOW CHIP — agency-style hover preview
+   ========================================================================== */
+.cursor-chip{
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  box-shadow: 0 14px 32px rgba(0,0,0,0.35);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.7);
+  transition:
+    opacity 200ms cubic-bezier(.2,.7,.2,1),
+    transform 200ms cubic-bezier(.2,.7,.2,1);
+  white-space: nowrap;
+}
+.cursor-chip.on{
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.cursor-chip .cc-arrow{
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  transform: translateY(-1px);
+}
+@media (pointer: coarse), (prefers-reduced-motion: reduce){
+  .cursor-chip{ display: none !important; }
+}
+
+/* ==========================================================================
+   SECTION PROGRESS RAIL
+   ========================================================================== */
+.rail{
+  position: fixed;
+  top: 50%;
+  right: 22px;
+  transform: translateY(-50%);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 6px;
+  background: color-mix(in srgb, var(--bg) 0%, transparent);
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 360ms var(--ease) 200ms;
+}
+body.entrance-done .rail{ opacity: 1; }
+.rail a{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  color: var(--muted);
+  position: relative;
+  text-decoration: none;
+  transition: color 220ms var(--ease);
+}
+.rail a:hover{ color: var(--text); }
+.rail .dot{
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--line-3);
+  transition: background 220ms var(--ease), border-color 220ms var(--ease), transform 220ms var(--ease);
+  flex: 0 0 auto;
+}
+.rail a:hover .dot{
+  border-color: var(--accent);
+  transform: scale(1.2);
+}
+.rail a[aria-current="true"] .dot,
+.rail a[data-current="true"] .dot{
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.2);
+}
+.rail .lbl{
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* default: hidden, slides in on hover/active */
+  opacity: 0;
+  transform: translateX(8px);
+  transition:
+    opacity 220ms var(--ease),
+    transform 220ms var(--ease);
+  pointer-events: none;
+}
+.rail a:hover .lbl,
+.rail a[aria-current="true"] .lbl,
+.rail a[data-current="true"] .lbl{
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (max-width: 1100px){
+  .rail{ display: none; }
+}
+
 /* ---------- CRT easter-egg mode (toggled via konami) ---------- */
 body.crt{
   filter: contrast(1.05) saturate(0.92);
