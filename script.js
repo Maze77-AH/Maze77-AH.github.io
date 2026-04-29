@@ -208,7 +208,36 @@
     sections.forEach(s => obs.observe(s));
   }
 
-  /* -------- mobile nav -------- */
+  /* -------- mobile nav with iOS-safe scroll lock -------- */
+  // Position-fixed body trick — fully prevents iOS Safari scroll bleed.
+  let _lockedScrollY = 0;
+  let _scrollLocked = false;
+  function lockPageScroll() {
+    if (_scrollLocked) return;
+    _scrollLocked = true;
+    _lockedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const sw = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${_lockedScrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    if (sw > 0) document.body.style.paddingRight = `${sw}px`;
+  }
+  function unlockPageScroll() {
+    if (!_scrollLocked) return;
+    _scrollLocked = false;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    window.scrollTo(0, _lockedScrollY);
+  }
+
   function initMobileNav() {
     const nav = document.getElementById('navMobile');
     if (!nav) return;
@@ -218,15 +247,13 @@
     const setOpen = open => {
       nav.open = open;
       summary?.setAttribute('aria-expanded', open ? 'true' : 'false');
-      document.body.style.overflow = open ? 'hidden' : '';
+      if (open) lockPageScroll(); else unlockPageScroll();
     };
 
     nav.addEventListener('toggle', () => {
       const open = nav.open;
       summary?.setAttribute('aria-expanded', open ? 'true' : 'false');
-      document.body.style.overflow = open ? 'hidden' : '';
-      const sw = window.innerWidth - document.documentElement.clientWidth;
-      document.body.style.paddingRight = open && sw > 0 ? `${sw}px` : '';
+      if (open) lockPageScroll(); else unlockPageScroll();
     });
 
     document.addEventListener('keydown', e => {
@@ -240,13 +267,14 @@
       if (!summary?.contains(t) && !panel?.contains(t)) setOpen(false);
     });
 
+    // Close panel when a link is clicked
     nav.addEventListener('click', e => {
       const a = e.target instanceof Element ? e.target.closest('a[href]') : null;
       if (a) setOpen(false);
     });
 
     const mq = window.matchMedia('(max-width: 940px)');
-    const onMq = () => { if (!mq.matches) setOpen(false); };
+    const onMq = () => { if (!mq.matches && nav.open) setOpen(false); };
     mq.addEventListener?.('change', onMq);
     mq.addListener?.(onMq);
   }
@@ -894,44 +922,45 @@ links:
   https://github.com/Maze77-AH
 `;
 
-    const NEMESIS = `nemesisssbu — rust runtime tooling                      [ 2024 → active ]
+    const NEMESIS = `nemesisssbu — rust runtime tooling                     [ 2024 → active ]
 
-stack: rust · runtime patching · low-level systems
+stack: rust · runtime tooling · low-level systems
 
-performance-sensitive runtime tooling in rust for a non-commercial
-super smash bros. ultimate modification with a large player community.
-the kind of code that runs on a hot path inside someone else's process —
-memory safety isn't a feature, it's a precondition.
+rust runtime / tooling work for a non-commercial super smash bros.
+ultimate modding project with a public community. the work targets
+memory safety, explicit failure handling, and robust api boundaries —
+the kind of layer where being slightly wrong can hurt someone else's
+machine.
 
 why rust over c++:
-  the failure mode of a UB-write here is "console crash on a stranger's
-  hardware." the type system is the operations layer.
+  the type system pays for itself in tooling that runs close to a host
+  process. memory safety isn't a feature here — it's a precondition.
 
 highlights:
   → careful api boundaries between modded code and the host runtime,
     no silent fallbacks, explicit errors.
-  → robust enough to run unsupervised across thousands of consumer
-    environments — debuggability and explainability are first-class.
+  → emphasized debuggability and explainability for a public modding
+    community.
   → patched paths designed to fail loudly in dev, gracefully in prod.
 
 links:
   https://github.com/NemesisSSBU
 `;
 
-    const REALCHAT = `realchat — ocr & ai-assisted automation tool           [ 2023 ]
+    const REALCHAT = `realchat — ocr desktop automation assistant           [ 2023 ]
 
-stack: python · ocr · ai · macos
+stack: python · ocr · tesseract · macos · packaging
 
-python desktop tool that combines on-screen ocr with ai-assisted
-decision logic. captures the screen, recognizes text, decides, and
-interacts with the os — without breaking it.
+python desktop tool combining screen capture, tesseract ocr, ai-assisted
+interpretation, and os-level automation with explicit safeguards.
 
 highlights:
   → robust ocr noise filtering for unstable on-screen text and
     inconsistent ui layouts.
-  → safe interaction with system resources — testing pass before any
-    input is dispatched.
-  → designed for predictable behavior over time, not one-shot demos.
+  → safeguards around input dispatch — predictable, testable
+    automation behavior.
+  → macos packaging: app bundling, encrypted local config, license-key
+    validation, hotkeys, gui.
 
 links:
   https://github.com/Maze77-AH
@@ -970,18 +999,73 @@ links:
   https://github.com/Maze77-AH
 `;
 
-    const LOWLEVEL = `low-level cs                                           [ ongoing ]
+    const LOWLEVEL = `low-level cs & systems                                [ ongoing ]
 
-stack: x64 assembly (masm) · c · os internals · math
+stack: c · assembly (risc-v, masm/x86) · architecture · parsing
 
-coursework and side study in x64 assembly, c, and operating-systems
-fundamentals. the kind of work that makes rust's borrow checker feel
-like a friend.
+coursework and self-study in computer architecture, assembly, c, and
+operating-systems fundamentals. the kind of work that makes rust's
+borrow checker feel like a friend.
 
-  → hand-written x64 asm exercises — calling conventions, memory
-    layout, syscalls.
-  → c programs with explicit memory and pointer discipline.
-  → bridges the "i know why" gap behind the high-level work.
+  → assembly and architecture: registers, memory, calling conventions,
+    instruction-level behavior, risc-style concepts.
+  → c / c++ systems study: pointers, memory layout, compilation,
+    os fundamentals.
+  → programming languages: grammars, parsing, finite automata,
+    semantics, recursive descent, shift-reduce.
+`;
+
+    const UNITED = `united exams — full-stack study platform              [ 2025 → active ]
+
+stack: next.js (app router) · typescript · supabase · postgresql · rls · tailwind · shadcn/ui
+
+a full-stack study platform with auth, persistent quiz attempts,
+mastery / streaks, leaderboard, and a polished academic ui.
+
+highlights:
+  → designed sql schema, rls policies, and triggers / views for
+    leaderboard, mastery, and streak tracking.
+  → supabase auth, protected routes, account settings, password reset,
+    email templates.
+  → courses, quizzes, profile, settings, contact — responsive across
+    desktop and mobile.
+  → security fundamentals: least-privilege access, rls, validation,
+    reliable session behavior.
+`;
+
+    const HEROIC = `heroic submission — game backend prototype            [ 2025 → r&d ]
+
+stack: next.js · typescript · postgresql · api design · eos (planned)
+
+backend foundations for an original-ip live-service multiplayer game.
+public catalog api with locale / chapter filtering, account-linking
+groundwork, and epic online services planning for cross-progression.
+
+highlights:
+  → catalog endpoint:
+      get /api/heroic-submission/v1/catalog
+    returns success, requestid, data.meta, currentchapterkey, chapters,
+    paragons, operators, incidentzones, chapterpasstiers, directives,
+    cosmetics.
+  → reads public hs catalog tables; excludes internal release_state and
+    parent chapter data.
+  → public / private boundaries treated as a first-class design concern.
+  → planning eos integration for multiplayer / account foundation.
+`;
+
+    const PORTSHELL = `interactive portfolio shell                           [ 2026 ]
+
+stack: html · css · javascript · github pages · cloudflare
+
+this site. hand-written html / css / js with an interactive
+terminal-style repl, command history, project search, view transitions,
+and accessible mobile nav — no frameworks.
+
+highlights:
+  → real repl with virtual filesystem (you're using it).
+  → command palette (⌘k), keyboard shortcuts, theme toggle, live local
+    time pinned to berkeley.
+  → deployed via github pages with a cloudflare-managed custom domain.
 `;
 
     return {
@@ -993,12 +1077,15 @@ like a friend.
         'contact.txt':     f(CONTACT),
         'education.txt':   f(EDU),
         'projects':        d({
-          'realfiction.md':  f(REALFIC),
-          'nemesisssbu.md':  f(NEMESIS),
-          'realchat.md':     f(REALCHAT),
-          'indie-studio.md': f(INDIE),
-          'folia.md':        f(FOLIA),
-          'lowlevel.md':     f(LOWLEVEL),
+          'realfiction.md':       f(REALFIC),
+          'nemesisssbu.md':       f(NEMESIS),
+          'united-exams.md':      f(UNITED),
+          'heroic-submission.md': f(HEROIC),
+          'realchat.md':          f(REALCHAT),
+          'folia.md':             f(FOLIA),
+          'portfolio-shell.md':   f(PORTSHELL),
+          'indie-studio.md':      f(INDIE),
+          'lowlevel.md':          f(LOWLEVEL),
         }),
         '.secrets':        d({
           'easter.md': f("you found it.\n\ntry the konami code: ↑↑↓↓←→←→ b a\nor type 'fortune' for a quote.\n\np.s. real recruiters get an actual cover letter.\n"),
@@ -1257,10 +1344,11 @@ no scheduled maintenance windows. occasional production fires.`);
             ['kernel', 'inter / instrument-serif / jetbrains-mono'],
             ['shell',  'js (esm, no deps)'],
             ['uptime', `${yrs} years (shipping since 2021)`],
-            ['edu',    'texas tech university — b.s. cs · math minor (\'27)'],
-            ['stack',  'rust · c++ · java · python · x64 asm'],
-            ['active', 'rust runtime tooling · realfiction backend'],
-            ['status', 'open to summer 2026 internships'],
+            ['edu',    'texas tech university — b.s. cs (\'27)'],
+            ['stack',  'rust · java · typescript · python · c++'],
+            ['active', 'united exams · heroic submission · realfiction'],
+            ['focus',  'systems · runtime · infra · backend / platform'],
+            ['status', 'open to summer 2026 swe internships'],
           ];
 
           const rowHtml = rows.map(([k, v]) => `<span class="k">${escape(k)}</span> <span class="v">${linkify(escape(v))}</span>`).join('\n');
