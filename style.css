@@ -19,8 +19,9 @@
   --line-2:    rgba(236,233,224,0.14);
   --line-3:    rgba(236,233,224,0.22);
 
-  --accent:    #f5b94a;
-  --accent-2:  #ff8a4c;
+  --accent:    #f5b94a; /* warm amber — primary */
+  --accent-2:  #5cd6c0; /* dusty mint-teal — atmospheric secondary */
+  --accent-3:  #c0a4ff; /* faint violet — used very sparingly for depth */
   --accent-ink:#0a0a0b;
 
   --shadow:   0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 48px rgba(0,0,0,0.42);
@@ -65,8 +66,9 @@
   --line-2:    rgba(20,19,15,0.16);
   --line-3:    rgba(20,19,15,0.24);
 
-  --accent:    #b86b1a;
-  --accent-2:  #d24e16;
+  --accent:    #b86b1a;       /* deep amber */
+  --accent-2:  #1f8a7c;       /* deep teal — light-mode complement */
+  --accent-3:  #6b4ec7;       /* deep violet */
   --accent-ink:#fbfaf6;
 
   --shadow:   0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 36px rgba(20,19,15,0.10);
@@ -125,13 +127,168 @@ body::before{
   pointer-events:none;
   z-index:0;
   background:
-    radial-gradient(60vw 60vh at 16% 10%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 60%),
-    radial-gradient(50vw 50vh at 90% 0%, color-mix(in srgb, var(--accent-2) 5%, transparent), transparent 60%);
+    radial-gradient(60vw 60vh at 16% 8%,  color-mix(in srgb, var(--accent) 11%, transparent),   transparent 62%),
+    radial-gradient(56vw 56vh at 92% 24%, color-mix(in srgb, var(--accent-2) 7%, transparent),  transparent 60%),
+    radial-gradient(40vw 40vh at 68% 78%, color-mix(in srgb, var(--accent-3) 5%, transparent),  transparent 62%);
 }
 [data-theme="light"] body::before{
   background:
-    radial-gradient(60vw 60vh at 16% 10%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 60%),
-    radial-gradient(50vw 50vh at 90% 0%, color-mix(in srgb, var(--accent-2) 4%, transparent), transparent 60%);
+    radial-gradient(60vw 60vh at 16% 8%,  color-mix(in srgb, var(--accent) 7%, transparent),   transparent 62%),
+    radial-gradient(56vw 56vh at 92% 24%, color-mix(in srgb, var(--accent-2) 5%, transparent), transparent 60%),
+    radial-gradient(40vw 40vh at 68% 78%, color-mix(in srgb, var(--accent-3) 3%, transparent), transparent 62%);
+}
+
+/* ==========================================================================
+   ATMOSPHERE — drifting orbs that give the page calm, futuristic depth.
+   GPU-only (transform + opacity), no JS. Disabled for reduced motion.
+   ========================================================================== */
+.atmos{
+  position: fixed;
+  inset: -20vh -10vw -20vh -10vw;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+.orb{
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px) saturate(120%);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation:
+    orb-fade 1600ms cubic-bezier(.2,.7,.2,1) 250ms forwards,
+    orb-drift 36s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+}
+.orb-a{
+  width: 56vmin; height: 56vmin;
+  top: -8vh; right: -6vw;
+  background:
+    radial-gradient(closest-side at 50% 50%,
+      color-mix(in srgb, var(--accent) 80%, transparent) 0%,
+      color-mix(in srgb, var(--accent) 30%, transparent) 45%,
+      transparent 70%);
+  --opa: 0.42;
+  --tx: 6vw; --ty: 4vh;
+  animation-duration: 1600ms, 32s;
+  animation-delay: 250ms, 0s;
+}
+.orb-b{
+  width: 64vmin; height: 64vmin;
+  bottom: -16vh; left: -10vw;
+  background:
+    radial-gradient(closest-side at 50% 50%,
+      color-mix(in srgb, var(--accent-2) 75%, transparent) 0%,
+      color-mix(in srgb, var(--accent-2) 24%, transparent) 50%,
+      transparent 72%);
+  --opa: 0.35;
+  --tx: -5vw; --ty: -6vh;
+  animation-duration: 1600ms, 44s;
+  animation-delay: 320ms, 0s;
+}
+.orb-c{
+  width: 42vmin; height: 42vmin;
+  top: 38vh; left: 52vw;
+  background:
+    radial-gradient(closest-side at 50% 50%,
+      color-mix(in srgb, var(--accent-3) 62%, transparent) 0%,
+      color-mix(in srgb, var(--accent-3) 18%, transparent) 50%,
+      transparent 76%);
+  --opa: 0.22;
+  --tx: 4vw; --ty: -3vh;
+  animation-duration: 1600ms, 28s;
+  animation-delay: 420ms, 0s;
+}
+@keyframes orb-fade{
+  to{ opacity: var(--opa, 0.3); }
+}
+@keyframes orb-drift{
+  from{ transform: translate3d(0, 0, 0) scale(1); }
+  to  { transform: translate3d(var(--tx, 4vw), var(--ty, 3vh), 0) scale(1.08); }
+}
+
+[data-theme="light"] .orb{
+  filter: blur(80px) saturate(140%);
+  mix-blend-mode: multiply;
+}
+[data-theme="light"] .orb-a{ --opa: 0.18; }
+[data-theme="light"] .orb-b{ --opa: 0.16; }
+[data-theme="light"] .orb-c{ --opa: 0.12; }
+
+@media (prefers-reduced-motion: reduce){
+  .orb{
+    animation: orb-fade 600ms ease both;
+  }
+}
+@media (max-width: 640px){
+  /* Soften on small screens — keep depth, ease the GPU */
+  .orb{ filter: blur(50px) saturate(110%); }
+  .orb-a{ width: 70vmin; height: 70vmin; --opa: 0.32; }
+  .orb-b{ width: 80vmin; height: 80vmin; --opa: 0.28; }
+  .orb-c{ display: none; }
+}
+
+/* ==========================================================================
+   PORTRAIT HALO — soft glowing sphere behind the headshot
+   ========================================================================== */
+.portrait{ overflow: visible; }
+.portrait > img{ position: relative; z-index: 1; }
+.portrait > figcaption{ z-index: 3; }
+.portrait > .portrait-halo,
+.portrait > .portrait-halo-2{
+  position: absolute;
+  inset: -22% -18% -22% -18%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  filter: blur(46px) saturate(125%);
+  animation:
+    halo-in 1400ms cubic-bezier(.2,.7,.2,1) 600ms forwards,
+    halo-breathe 9s ease-in-out infinite alternate 1500ms;
+  background:
+    radial-gradient(closest-side at 50% 45%,
+      color-mix(in srgb, var(--accent) 65%, transparent) 0%,
+      color-mix(in srgb, var(--accent) 22%, transparent) 45%,
+      transparent 75%);
+  will-change: transform, opacity;
+}
+.portrait > .portrait-halo-2{
+  inset: -10% -28% -28% -10%;
+  filter: blur(70px) saturate(110%);
+  background:
+    radial-gradient(closest-side at 60% 60%,
+      color-mix(in srgb, var(--accent-2) 50%, transparent) 0%,
+      transparent 70%);
+  animation-delay: 750ms, 1700ms;
+  animation-duration: 1600ms, 11s;
+}
+@keyframes halo-in{
+  to{ opacity: 1; }
+}
+@keyframes halo-breathe{
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(2%, -1%, 0) scale(1.06); }
+  100% { transform: translate3d(-1%, 1%, 0) scale(0.98); }
+}
+[data-theme="light"] .portrait > .portrait-halo,
+[data-theme="light"] .portrait > .portrait-halo-2{
+  mix-blend-mode: multiply;
+  filter: blur(46px) saturate(110%);
+}
+@media (prefers-reduced-motion: reduce){
+  .portrait > .portrait-halo,
+  .portrait > .portrait-halo-2{ animation: halo-in 600ms ease both; }
+}
+
+/* ==========================================================================
+   CALM REVEAL — softer ease curve for hero entry (mycalmsite vibe)
+   ========================================================================== */
+.reveal{
+  transition:
+    opacity 720ms cubic-bezier(.2,.85,.2,1),
+    transform 820ms cubic-bezier(.2,.85,.2,1);
 }
 
 /* Fine grain overlay (SVG noise inlined as data URI) */
@@ -415,8 +572,30 @@ em{ font-style: italic; }
   height: 16px;
   flex: 0 0 auto;
   display: inline-block;
+  transition: transform 520ms cubic-bezier(.4, 1.4, .35, 1);
 }
 .btn .icon{ width:14px; height:14px; }
+
+/* Bettinasosa-style hover rotation on directional arrow icons.
+   Primary CTAs nudge their chevron 45°; "site" buttons in featured do a full spin. */
+.btn.primary:hover .icon{
+  transform: rotate(45deg) translate(1px, -1px);
+}
+.feature-actions .btn.primary:hover .icon{
+  transform: rotate(360deg);
+}
+.contact-cta:hover .contact-arrow svg{
+  transform: rotate(-12deg);
+}
+
+/* Letter-spacing micro-tighten on project hover (designer-y polish) */
+.project,
+.project .proj-head h3{
+  transition: letter-spacing 280ms cubic-bezier(.2,.7,.2,1);
+}
+.project:hover .proj-head h3{
+  letter-spacing: -0.012em;
+}
 
 .btn.lg{
   --pad-y: 13px;

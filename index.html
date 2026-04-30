@@ -73,7 +73,12 @@
     </div>
   </div>
 
-  <!-- Ambient grain overlay -->
+  <!-- Atmospheric depth layer (drifting orbs, hero halo, grain) -->
+  <div class="atmos" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+  </div>
   <div class="grain" aria-hidden="true"></div>
   <div class="cursor-glow" aria-hidden="true"></div>
 
@@ -239,6 +244,8 @@
 
         <aside class="hero-aside" aria-label="Headshot and links">
           <figure class="portrait reveal">
+            <span class="portrait-halo" aria-hidden="true"></span>
+            <span class="portrait-halo portrait-halo-2" aria-hidden="true"></span>
             <img
               src="Images/Nicholas.png"
               alt="Portrait of Nicholas Lasagna"
