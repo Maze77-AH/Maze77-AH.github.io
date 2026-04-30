@@ -1592,17 +1592,87 @@ no scheduled maintenance windows. occasional production fires.`);
       }
     });
 
-    /* ---- boot sequence ---- */
+    /* ---- boot sequence (deferred + cinematic typing on viewport enter) ---- */
     updateCwdEls();
     const start = new Date('2021-06-01');
     const yrs = ((Date.now() - start) / (1000 * 60 * 60 * 24 * 365.25)).toFixed(1);
-    printInfo(`nicholas@portfolio v2.7.0 — uptime ${yrs}y`);
-    printText(`type 'help' for commands. try 'cat about.md', 'tour', or 'neofetch'.`);
-    newline();
+
+    const bootLines = [
+      { text: `nicholas@portfolio v2.7.0 — uptime ${yrs}y`, kind: 'info' },
+      { text: `type 'help' for commands. try 'cat about.md', 'tour', or 'neofetch'.`, kind: 'text' },
+    ];
+
+    const printPlain = () => {
+      printInfo(bootLines[0].text);
+      printText(bootLines[1].text);
+      newline();
+    };
+
+    // Type a single line character-by-character with a blinking caret at the end.
+    const typeLine = (line) => new Promise(resolve => {
+      const div = document.createElement('div');
+      div.className = 'term-line ' + (line.kind === 'info' ? '' : '');
+      const textEl = document.createElement('span');
+      if (line.kind === 'info') textEl.className = 'info';
+      const caret = document.createElement('span');
+      caret.className = 'typing-caret';
+      div.appendChild(textEl);
+      div.appendChild(caret);
+      out.appendChild(div);
+
+      let i = 0;
+      const tick = () => {
+        if (i >= line.text.length) {
+          caret.remove();
+          out.scrollTop = out.scrollHeight;
+          resolve();
+          return;
+        }
+        textEl.textContent += line.text[i++];
+        out.scrollTop = out.scrollHeight;
+        setTimeout(tick, 8 + Math.random() * 14);
+      };
+      tick();
+    });
+
+    let booted = false;
+    const startBoot = async () => {
+      if (booted) return;
+      booted = true;
+      if (reduceMotion()) {
+        printPlain();
+        return;
+      }
+      // Small initial pause so the section settles into view before typing
+      await new Promise(r => setTimeout(r, 220));
+      for (const line of bootLines) {
+        await typeLine(line);
+        await new Promise(r => setTimeout(r, 80));
+      }
+      newline();
+    };
+
+    // Trigger boot when the terminal is intersecting the viewport
+    if (typeof IntersectionObserver !== 'undefined') {
+      const bootObs = new IntersectionObserver(entries => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            bootObs.disconnect();
+            startBoot();
+            break;
+          }
+        }
+      }, { threshold: 0.18 });
+      bootObs.observe(term);
+    } else {
+      // No IO support — print immediately.
+      printPlain();
+    }
 
     return {
       run: (s) => run(s),
       focus: () => input.focus(),
+      boot: startBoot,
     };
   }
 
@@ -1675,80 +1745,131 @@ no scheduled maintenance windows. occasional production fires.`);
 
     /* ---- heatmap shell: 52 weeks × 7 days ---- */
     const WEEKS = 52;
-    const cells = [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    // Move to Saturday end-of-week so columns line up nicely
-    const endDay = new Date(today);
     const startDay = new Date(today);
     startDay.setDate(startDay.getDate() - (WEEKS * 7 - 1));
+    // Align startDay to Sunday so columns are clean weeks
+    const dow = startDay.getDay(); // 0..6 (Sun..Sat)
+    if (dow !== 0) startDay.setDate(startDay.getDate() - dow);
 
     const dayKey = (d) => d.toISOString().slice(0, 10);
     const cellByDay = new Map();
-    for (let i = 0; i < WEEKS * 7; i++) {
+    heatmap.innerHTML = '';
+
+    const totalDays = Math.ceil(((today - startDay) / 86400000)) + 1;
+    const padded = Math.max(WEEKS * 7, totalDays);
+    for (let i = 0; i < padded; i++) {
       const d = new Date(startDay);
       d.setDate(d.getDate() + i);
+      if (d > today) break;
       const key = dayKey(d);
       const el = document.createElement('div');
       el.className = 'heatmap-cell';
-      el.title = `${key}: 0 events`;
+      el.title = `${key}: 0 contributions`;
       el.dataset.date = key;
       heatmap.appendChild(el);
-      cells.push(el);
       cellByDay.set(key, el);
     }
 
-    /* ---- fetch events ---- */
+    /* ---- 1. try real contribution graph (full year, includes private) ---- */
+    let contribTotal = 0;
+    let contribFromGraph = false;
+    const LEVEL_MAP = {
+      NONE: 0, FIRST_QUARTILE: 1, SECOND_QUARTILE: 2, THIRD_QUARTILE: 3, FOURTH_QUARTILE: 4
+    };
+    try {
+      const r = await fetch(`https://github-contributions-api.deno.dev/${GITHUB_USER}.json?flat=true`, { mode: 'cors' });
+      if (r.ok) {
+        const data = await r.json();
+        if (Array.isArray(data?.contributions)) {
+          for (const day of data.contributions) {
+            const el = cellByDay.get(day.date);
+            // The API returns either a string enum (contributionLevel) or a number (level)
+            let lvl = 0;
+            if (typeof day.contributionLevel === 'string') {
+              lvl = LEVEL_MAP[day.contributionLevel] ?? 0;
+            } else if (typeof day.level === 'number') {
+              lvl = Math.max(0, Math.min(4, day.level));
+            }
+            const cnt = +day.contributionCount || +day.count || 0;
+            contribTotal += cnt;
+            if (el && lvl > 0) {
+              el.classList.add('l-' + lvl);
+              el.title = `${day.date}: ${cnt} contribution${cnt === 1 ? '' : 's'}`;
+            } else if (el && cnt > 0) {
+              // Fallback: count present but no level — derive level from count
+              const fallbackLvl = cnt >= 10 ? 4 : cnt >= 5 ? 3 : cnt >= 2 ? 2 : 1;
+              el.classList.add('l-' + fallbackLvl);
+              el.title = `${day.date}: ${cnt} contribution${cnt === 1 ? '' : 's'}`;
+            } else if (el) {
+              el.title = `${day.date}: 0 contributions`;
+            }
+          }
+          contribFromGraph = true;
+        }
+      }
+    } catch {}
+
+    /* ---- 2. always also fetch recent events for the feed (and as heatmap fallback) ---- */
     let events = [];
     try {
       const r = await fetch(`https://api.github.com/users/${GITHUB_USER}/events/public?per_page=30`, {
         headers: { 'Accept': 'application/vnd.github+json' }
       });
-      if (!r.ok) throw new Error('api ' + r.status);
-      let raw = await r.json();
-      if (!Array.isArray(raw)) raw = [];
-      // Drop empty / no-op pushes and other meaningless events.
-      // pushCount() guarantees we never render a "0 commits" line.
-      events = raw.filter(e => {
-        if (e.type === 'PushEvent') return pushCount(e) > 0;
-        return ['CreateEvent','PullRequestEvent','IssuesEvent','ReleaseEvent','ForkEvent','PublicEvent','CommitCommentEvent'].includes(e.type);
-      });
-      if (status) {
-        if (events.length) {
-          status.innerHTML = `${events.length} recent event${events.length === 1 ? '' : 's'} · refreshed <span data-refreshed>just now</span>`;
+      if (r.ok) {
+        let raw = await r.json();
+        if (!Array.isArray(raw)) raw = [];
+        events = raw.filter(e => {
+          if (e.type === 'PushEvent') return pushCount(e) > 0;
+          return ['CreateEvent','PullRequestEvent','IssuesEvent','ReleaseEvent','ForkEvent','PublicEvent','CommitCommentEvent'].includes(e.type);
+        });
+      }
+    } catch {}
+
+    /* ---- if the graph API failed, use events as a (sparse) fallback ---- */
+    if (!contribFromGraph) {
+      const counts = {};
+      for (const e of events) {
+        if (e.type === 'PushEvent') {
+          const k = (e.created_at || '').slice(0, 10);
+          if (k) counts[k] = (counts[k] || 0) + pushCount(e);
         } else {
-          status.innerHTML = `<span class="dim">no recent public commits — most current work lives in private repos.</span>`;
+          const k = (e.created_at || '').slice(0, 10);
+          if (k) counts[k] = (counts[k] || 0) + 1;
         }
       }
-    } catch (err) {
-      if (status) status.innerHTML = `<span class="dim">offline / rate-limited — see <a class="ink" href="https://github.com/${GITHUB_USER}" target="_blank" rel="noreferrer">github.com/${GITHUB_USER}</a>.</span>`;
+      const maxCount = Math.max(1, ...Object.values(counts));
+      for (const [k, n] of Object.entries(counts)) {
+        const el = cellByDay.get(k);
+        if (!el) continue;
+        const ratio = n / maxCount;
+        let level = 1;
+        if (ratio > 0.75) level = 4;
+        else if (ratio > 0.5) level = 3;
+        else if (ratio > 0.25) level = 2;
+        el.classList.add('l-' + level);
+        el.title = `${k}: ${n}+ event${n === 1 ? '' : 's'}`;
+        contribTotal += n;
+      }
     }
 
-    /* ---- populate heatmap ---- */
-    const counts = {};
-    for (const e of events) {
-      const k = (e.created_at || '').slice(0, 10);
-      if (!k) continue;
-      counts[k] = (counts[k] || 0) + 1;
-    }
-    const maxCount = Math.max(1, ...Object.values(counts));
-    for (const [k, n] of Object.entries(counts)) {
-      const el = cellByDay.get(k);
-      if (!el) continue;
-      const ratio = n / maxCount;
-      let level = 1;
-      if (ratio > 0.75) level = 4;
-      else if (ratio > 0.5) level = 3;
-      else if (ratio > 0.25) level = 2;
-      el.classList.add('l-' + level);
-      el.title = `${k}: ${n} event${n === 1 ? '' : 's'}`;
+    /* ---- status line ---- */
+    if (status) {
+      if (contribFromGraph) {
+        status.innerHTML = `${contribTotal.toLocaleString()} contributions in the last year · refreshed <span data-refreshed>just now</span>`;
+      } else if (events.length) {
+        status.innerHTML = `${events.length} recent public event${events.length === 1 ? '' : 's'} · live counts unavailable`;
+      } else {
+        status.innerHTML = `<span class="dim">live counts unavailable — see <a class="ink" href="https://github.com/${GITHUB_USER}" target="_blank" rel="noreferrer">github.com/${GITHUB_USER}</a>.</span>`;
+      }
     }
 
     /* ---- populate feed ---- */
     feed.innerHTML = '';
     if (!events.length) {
       const li = document.createElement('li');
-      li.innerHTML = `<span class="ev-icon">·</span><span><span class="ev-when">—</span><span class="ev-msg dim">no recent public events. check back soon, or open <a class="ink" href="https://github.com/${GITHUB_USER}" target="_blank" rel="noreferrer">github.com/${GITHUB_USER}</a>.</span></span>`;
+      li.innerHTML = `<span class="ev-icon">·</span><span><span class="ev-when">—</span><span class="ev-msg dim">no recent public events. most current work lives in private repos — see <a class="ink" href="https://github.com/${GITHUB_USER}" target="_blank" rel="noreferrer">github.com/${GITHUB_USER}</a>.</span></span>`;
       feed.appendChild(li);
       return;
     }
@@ -2057,6 +2178,116 @@ no scheduled maintenance windows. occasional production fires.`);
     }, { passive: true });
   }
 
+  /* ==========================================================================
+     SCROLL PROGRESS BAR — top edge, fills as you scroll
+     ========================================================================== */
+  function initScrollProgress() {
+    const bar = document.getElementById('scrollProgress');
+    if (!bar) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const p = max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0;
+      bar.style.setProperty('--p', `${p}%`);
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+  }
+
+  /* ==========================================================================
+     CARD GLOW + TILT — pointer-tracked highlight + micro 3D
+     ========================================================================== */
+  function initCardInteractions() {
+    if (reduceMotion()) return;
+    if (matchMedia('(pointer: coarse)').matches) return;
+
+    const cards = $$('.project, .feature');
+    const MAX_TILT = 1.8; // degrees
+
+    cards.forEach(card => {
+      let raf = 0;
+      let tx = 0, ty = 0, mx = 50, my = 50;
+
+      const apply = () => {
+        raf = 0;
+        card.style.setProperty('--mx', `${mx}%`);
+        card.style.setProperty('--my', `${my}%`);
+        card.style.transform = `perspective(900px) rotateX(${tx}deg) rotateY(${ty}deg)`;
+      };
+
+      card.addEventListener('mouseenter', () => {
+        card.classList.add('is-tilting');
+      });
+
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width;
+        const y = (e.clientY - r.top) / r.height;
+        mx = x * 100;
+        my = y * 100;
+        ty = (x - 0.5) * 2 * MAX_TILT;
+        tx = (0.5 - y) * 2 * MAX_TILT;
+        if (!raf) raf = requestAnimationFrame(apply);
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.classList.remove('is-tilting');
+        // Smooth settle to neutral
+        card.style.transform = '';
+      });
+    });
+  }
+
+  /* ==========================================================================
+     STAGGER REVEAL — set --si on children, toggle .in-view via IntersectionObserver
+     ========================================================================== */
+  function initStaggerReveal() {
+    const groups = $$('[data-stagger]');
+    if (!groups.length) return;
+
+    groups.forEach(group => {
+      const kids = Array.from(group.children).filter(c =>
+        c.classList?.contains('project') ||
+        c.classList?.contains('feature') ||
+        c.classList?.contains('reveal')
+      );
+      kids.forEach((el, i) => el.style.setProperty('--si', String(i)));
+    });
+
+    if (reduceMotion()) {
+      groups.forEach(g => g.classList.add('in-view'));
+      return;
+    }
+
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in-view');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+
+    groups.forEach(g => obs.observe(g));
+  }
+
+  /* ==========================================================================
+     TERMINAL ACTIVE GLOW — section gets a soft accent halo when in viewport
+     ========================================================================== */
+  function initTerminalGlow() {
+    const section = document.getElementById('shell');
+    if (!section) return;
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => section.classList.toggle('is-focus', e.isIntersecting && e.intersectionRatio > 0.3));
+    }, { threshold: [0, 0.3, 0.6] });
+    obs.observe(section);
+  }
+
   /* -------- boot -------- */
   function boot() {
     initHeaderHeight();
@@ -2070,6 +2301,7 @@ no scheduled maintenance windows. occasional production fires.`);
     initAnchorOffset();
     initActiveSection();
     initSectionRail();
+    initScrollProgress();
     initMobileNav();
 
     const projects = initProjects();
@@ -2078,15 +2310,18 @@ no scheduled maintenance windows. occasional production fires.`);
     initContactCopy();
     initFootTop();
     initReveal();
+    initStaggerReveal();
     initKeyboardNav(projects);
     initKonami();
 
     // New: terminal, signature, github, pinned principles, cursor chip
     initTerminal();
+    initTerminalGlow();
     initSignature();
     initGithubActivity();
     initPinnedPrinciples();
     initCursorChip();
+    initCardInteractions();
 
     consoleSignature();
   }
