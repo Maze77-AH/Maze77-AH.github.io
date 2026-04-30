@@ -1913,10 +1913,10 @@ no scheduled maintenance windows. occasional production fires.`);
   }
 
   /* ==========================================================================
-     SIGNATURE — animate stroke when in view
+     FOOTER WORDMARK — animate the underline draw when the footer enters view
      ========================================================================== */
   function initSignature() {
-    const sig = document.querySelector('.signature');
+    const sig = document.querySelector('.foot-sig');
     if (!sig) return;
     if (reduceMotion()) { sig.classList.add('draw'); return; }
     const obs = new IntersectionObserver((entries, observer) => {
