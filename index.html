@@ -91,6 +91,11 @@
     <span class="cc-arrow" aria-hidden="true">→</span>
   </div>
 
+  <!-- Contextual cursor ring (augments the native cursor on fine pointers) -->
+  <div class="ctx-cursor" id="ctxCursor" aria-hidden="true">
+    <div class="cc-ring"></div>
+  </div>
+
   <!-- Right-edge section progress rail -->
   <aside class="rail" id="rail" aria-label="Section progress">
     <a href="#shell" data-rail-id="shell"><span class="dot"></span><span class="lbl mono">Shell</span></a>
@@ -188,6 +193,11 @@
             <span class="status">
               <span class="status-dot"></span>
               <span>Open to Summer 2026 internships</span>
+            </span>
+            <span class="status status-live" id="liveRF" aria-label="RealFiction live status">
+              <span class="status-dot rf-dot" data-rf-state="checking"></span>
+              <span class="rf-label mono">realfiction.live</span>
+              <span class="rf-meta mono dim" data-rf-meta>checking…</span>
             </span>
           </p>
 
@@ -1077,6 +1087,12 @@
         <div class="foot-meta mono dim">
           © <span id="year"></span> · Nicholas Lasagna · <span class="dim">/usr/local/bin/portfolio</span><br>
           Hand-written HTML, CSS, JS · No frameworks · GitHub Pages
+        </div>
+        <div class="foot-vitals mono dim" id="vitalsBar" aria-label="Live web vitals">
+          <span data-perf-fcp>fcp <span class="dim">—</span></span>
+          <span data-perf-lcp>lcp <span class="dim">—</span></span>
+          <span data-perf-cls>cls <span class="dim">—</span></span>
+          <span data-perf-bytes>js <span class="dim">—</span></span>
         </div>
       </div>
       <div class="foot-right">

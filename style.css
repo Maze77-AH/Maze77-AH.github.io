@@ -2899,6 +2899,168 @@ body.entrance-done .rail{ opacity: 1; }
 }
 @keyframes typing-blink{ 50%{ opacity: 0; } }
 
+/* ==========================================================================
+   LIVE REALFICTION STATUS PILL — sits next to the internships pill.
+   Shows real HEAD-ping result with latency. Color shifts based on state.
+   ========================================================================== */
+.kicker{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.status-live{
+  /* Inherits .status base styles */
+  background: color-mix(in srgb, var(--bg-elev) 70%, transparent);
+}
+.rf-dot{
+  background: var(--muted-2);
+  box-shadow: none;
+  animation: none;
+  transition: background 280ms ease, box-shadow 280ms ease;
+}
+.rf-dot[data-rf-state="up"]{
+  background: #4ade80;
+  box-shadow: 0 0 0 0 rgba(74,222,128,0.55);
+  animation: pulse 2.4s var(--ease) infinite;
+}
+.rf-dot[data-rf-state="slow"]{
+  background: var(--accent);
+  animation: pulse-warm 2.4s var(--ease) infinite;
+}
+.rf-dot[data-rf-state="down"]{
+  background: #ff6b6b;
+}
+.rf-dot[data-rf-state="checking"]{
+  background: var(--muted);
+  animation: rf-flicker 1.2s ease-in-out infinite;
+}
+@keyframes rf-flicker{
+  50%{ opacity: 0.4; }
+}
+.rf-label{
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.rf-meta{
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  margin-left: 4px;
+}
+
+@media (max-width: 540px){
+  .status-live .rf-label{ display: none; }
+}
+
+/* ==========================================================================
+   AUGMENTED CONTEXTUAL CURSOR (fine pointers only)
+   A subtle hollow ring follows the cursor, expands/morphs by hovered context.
+   Native cursor stays — this is additive polish.
+   ========================================================================== */
+.ctx-cursor{
+  position: fixed;
+  top: 0; left: 0;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 9000;
+  opacity: 0;
+  transition: opacity 240ms var(--ease);
+  mix-blend-mode: difference;
+  will-change: transform;
+}
+.ctx-cursor.on{ opacity: 0.95; }
+.ctx-cursor .cc-ring{
+  width: 100%;
+  height: 100%;
+  border: 1.5px solid #ffffff;
+  border-radius: 50%;
+  transform: scale(1);
+  transition:
+    transform 280ms cubic-bezier(.2,.7,.2,1),
+    border-radius 280ms cubic-bezier(.2,.7,.2,1),
+    background 220ms ease,
+    border-color 220ms ease;
+}
+/* Interactive elements: ring grows + fills */
+.ctx-cursor[data-state="click"] .cc-ring{
+  transform: scale(1.45);
+  background: #ffffff;
+}
+/* Project / feature cards: square-ish ring */
+.ctx-cursor[data-state="card"] .cc-ring{
+  transform: scale(1.9);
+  border-radius: 6px;
+}
+/* Text: tall thin caret */
+.ctx-cursor[data-state="text"] .cc-ring{
+  transform: scaleX(0.16) scaleY(1.7);
+  border-radius: 1px;
+  background: #ffffff;
+}
+/* Disabled on touch + reduced-motion */
+@media (pointer: coarse), (prefers-reduced-motion: reduce){
+  .ctx-cursor{ display: none !important; }
+}
+
+/* ==========================================================================
+   HERO CLICK-TO-SCATTER — words spring outward when you click the headline
+   ========================================================================== */
+.reveal-words{
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.reveal-words .w > span{
+  --sx: 0px;
+  --sy: 0px;
+  --sr: 0deg;
+  display: inline-block;
+  will-change: transform;
+}
+.reveal-words.is-scattering .w > span{
+  animation: word-scatter 1300ms cubic-bezier(.2, 1.05, .35, 1);
+}
+@keyframes word-scatter{
+  0%   { transform: translate(0, 0) rotate(0); }
+  35%  { transform: translate(var(--sx), var(--sy)) rotate(var(--sr)); }
+  70%  { transform: translate(calc(var(--sx) * -0.25), calc(var(--sy) * -0.2)) rotate(calc(var(--sr) * -0.3)); }
+  100% { transform: translate(0, 0) rotate(0); }
+}
+@media (prefers-reduced-motion: reduce){
+  .reveal-words.is-scattering .w > span{ animation: none; }
+  .reveal-words{ cursor: default; }
+}
+
+/* ==========================================================================
+   FOOTER WEB-VITALS BAR
+   ========================================================================== */
+.foot-vitals{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.foot-vitals > span{
+  display: inline-flex;
+  gap: 6px;
+  color: var(--muted-2);
+}
+.foot-vitals > span > .dim{ color: var(--muted-2); }
+.foot-vitals[data-good="true"] > span > strong{ color: var(--text-2); }
+.foot-vitals strong{
+  font-weight: 500;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.foot-vitals[data-poor] strong{ color: var(--accent); }
+
 /* ---------- CRT easter-egg mode (toggled via konami) ---------- */
 body.crt{
   filter: contrast(1.05) saturate(0.92);

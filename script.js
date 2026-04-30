@@ -1854,10 +1854,28 @@ no scheduled maintenance windows. occasional production fires.`);
       }
     }
 
-    /* ---- status line ---- */
+    /* ---- status line — count animates up when section enters viewport ---- */
     if (status) {
       if (contribFromGraph) {
-        status.innerHTML = `${contribTotal.toLocaleString()} contributions in the last year · refreshed <span data-refreshed>just now</span>`;
+        status.innerHTML = `<span data-count>0</span> contributions in the last year · refreshed <span>just now</span>`;
+        const counter = status.querySelector('[data-count]');
+        if (counter) {
+          // Start animation when the activity card scrolls into view
+          if ('IntersectionObserver' in window) {
+            const obs = new IntersectionObserver(entries => {
+              for (const e of entries) {
+                if (e.isIntersecting) {
+                  animateCount(counter, contribTotal, 1600);
+                  obs.disconnect();
+                  break;
+                }
+              }
+            }, { threshold: 0.4 });
+            obs.observe(root);
+          } else {
+            counter.textContent = contribTotal.toLocaleString();
+          }
+        }
       } else if (events.length) {
         status.innerHTML = `${events.length} recent public event${events.length === 1 ? '' : 's'} · live counts unavailable`;
       } else {
@@ -2288,11 +2306,237 @@ no scheduled maintenance windows. occasional production fires.`);
     obs.observe(section);
   }
 
+  /* ==========================================================================
+     LIVE REALFICTION STATUS — real HEAD ping + latency, refreshed every 60s
+     ========================================================================== */
+  function initLiveRealFiction() {
+    const wrap = document.getElementById('liveRF');
+    if (!wrap) return;
+    const dot = wrap.querySelector('.rf-dot');
+    const meta = wrap.querySelector('[data-rf-meta]');
+
+    const setState = (state, text) => {
+      if (dot) dot.dataset.rfState = state;
+      if (meta) meta.textContent = text;
+    };
+
+    const ping = async () => {
+      setState('checking', 'pinging…');
+      const start = performance.now();
+      try {
+        // no-cors HEAD: we don't get the body, but the request resolves on success.
+        // Cache-busted so we measure live latency.
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 8000);
+        await fetch(`https://realfiction.live/?_=${Date.now()}`, {
+          method: 'HEAD',
+          mode: 'no-cors',
+          cache: 'no-store',
+          signal: ctrl.signal,
+        });
+        clearTimeout(timer);
+        const ms = Math.round(performance.now() - start);
+        const slow = ms > 800;
+        setState(slow ? 'slow' : 'up', `${ms}ms · ${slow ? 'slow' : 'up'}`);
+      } catch (err) {
+        if (err?.name === 'AbortError') {
+          setState('down', 'timeout');
+        } else {
+          setState('down', 'unreachable');
+        }
+      }
+    };
+
+    ping();
+    setInterval(ping, 60_000);
+  }
+
+  /* ==========================================================================
+     ANIMATED COUNTERS — count up to value when element enters viewport
+     ========================================================================== */
+  function animateCount(el, to, duration = 1400) {
+    if (reduceMotion()) {
+      el.textContent = to.toLocaleString();
+      return;
+    }
+    const start = performance.now();
+    const ease = (t) => 1 - Math.pow(1 - t, 3);
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      el.textContent = Math.round(to * ease(t)).toLocaleString();
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  /* ==========================================================================
+     CONTEXTUAL CURSOR RING — additive polish on fine-pointer devices
+     ========================================================================== */
+  function initContextCursor() {
+    const cursor = document.getElementById('ctxCursor');
+    if (!cursor) return;
+    if (reduceMotion()) return;
+    if (matchMedia('(pointer: coarse)').matches) return;
+
+    let raf = 0, tx = -100, ty = -100, x = -100, y = -100;
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    const loop = () => {
+      x = lerp(x, tx, 0.22);
+      y = lerp(y, ty, 0.22);
+      cursor.style.transform = `translate(${x - 14}px, ${y - 14}px)`;
+      if (Math.abs(tx - x) > 0.15 || Math.abs(ty - y) > 0.15) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        raf = 0;
+      }
+    };
+
+    document.addEventListener('mousemove', (e) => {
+      tx = e.clientX; ty = e.clientY;
+      cursor.classList.add('on');
+      if (!raf) raf = requestAnimationFrame(loop);
+    }, { passive: true });
+
+    document.addEventListener('mouseleave', () => cursor.classList.remove('on'));
+    document.addEventListener('mouseenter', () => cursor.classList.add('on'));
+
+    // Update state by what's under the pointer
+    document.addEventListener('mouseover', (e) => {
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      let state = '';
+      if (t.closest('a, button, .btn, [role="button"], summary, .chip, .nav-link, .nav-item, .term-mini, .t-dot, .term-input-line, .iconbtn, .palette-item')) {
+        state = 'click';
+      } else if (t.closest('.project, .feature, .stack-card, .card.activity, .now')) {
+        state = 'card';
+      } else if (t.closest('input, textarea, [contenteditable], .term-input, h1, h2, h3, p')) {
+        state = 'text';
+      }
+      cursor.dataset.state = state;
+    });
+  }
+
+  /* ==========================================================================
+     CLICK-TO-SCATTER HERO HEADLINE — words spring outward and settle back
+     ========================================================================== */
+  function initHeroScatter() {
+    const h1 = document.querySelector('.display.reveal-words');
+    if (!h1) return;
+    if (reduceMotion()) return;
+
+    const scatter = () => {
+      if (h1.classList.contains('is-scattering')) return;
+      const inners = h1.querySelectorAll('.w > span');
+      if (!inners.length) return;
+      h1.classList.add('is-scattering');
+      inners.forEach((el) => {
+        const dx = (Math.random() - 0.5) * 64;
+        const dy = (Math.random() - 0.5) * 30;
+        const dr = (Math.random() - 0.5) * 18;
+        el.style.setProperty('--sx', `${dx}px`);
+        el.style.setProperty('--sy', `${dy}px`);
+        el.style.setProperty('--sr', `${dr}deg`);
+      });
+      setTimeout(() => {
+        h1.classList.remove('is-scattering');
+        inners.forEach(el => {
+          el.style.removeProperty('--sx');
+          el.style.removeProperty('--sy');
+          el.style.removeProperty('--sr');
+        });
+      }, 1300);
+    };
+
+    h1.addEventListener('click', scatter);
+    h1.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        scatter();
+      }
+    });
+    h1.setAttribute('tabindex', '-1');
+  }
+
+  /* ==========================================================================
+     LIVE WEB VITALS — real PerformanceObserver values, shown in mono
+     ========================================================================== */
+  function initWebVitals() {
+    const fcpEl = document.querySelector('[data-perf-fcp]');
+    const lcpEl = document.querySelector('[data-perf-lcp]');
+    const clsEl = document.querySelector('[data-perf-cls]');
+    const bytesEl = document.querySelector('[data-perf-bytes]');
+    if (!fcpEl && !lcpEl && !clsEl && !bytesEl) return;
+
+    const setVal = (el, label, val, unit = 'ms') => {
+      if (!el) return;
+      el.innerHTML = `${label} <strong>${val}${unit}</strong>`;
+    };
+
+    // FCP
+    try {
+      const obs = new PerformanceObserver(list => {
+        for (const e of list.getEntries()) {
+          if (e.name === 'first-contentful-paint') {
+            setVal(fcpEl, 'fcp', Math.round(e.startTime));
+            obs.disconnect();
+          }
+        }
+      });
+      obs.observe({ type: 'paint', buffered: true });
+    } catch {}
+
+    // LCP
+    try {
+      let lastLcp = 0;
+      const obs = new PerformanceObserver(list => {
+        const entries = list.getEntries();
+        const last = entries[entries.length - 1];
+        if (last) lastLcp = Math.round(last.startTime);
+        setVal(lcpEl, 'lcp', lastLcp);
+      });
+      obs.observe({ type: 'largest-contentful-paint', buffered: true });
+      // Final LCP measure once page is idle
+      setTimeout(() => {
+        try { obs.takeRecords(); } catch {}
+        if (lastLcp) setVal(lcpEl, 'lcp', lastLcp);
+      }, 4000);
+    } catch {}
+
+    // CLS
+    try {
+      let cls = 0;
+      const obs = new PerformanceObserver(list => {
+        for (const e of list.getEntries()) {
+          if (!e.hadRecentInput) cls += e.value;
+        }
+        setVal(clsEl, 'cls', cls.toFixed(3), '');
+      });
+      obs.observe({ type: 'layout-shift', buffered: true });
+    } catch {}
+
+    // JS bytes (sum encoded transfer size of own scripts)
+    try {
+      const obs = new PerformanceObserver(list => {
+        let total = 0;
+        for (const e of list.getEntries()) {
+          if (e.initiatorType === 'script' && (e.name.endsWith('.js') || e.name.includes('script.js'))) {
+            // Prefer encodedBodySize (compressed), fall back to transferSize
+            total += e.encodedBodySize || e.transferSize || 0;
+          }
+        }
+        if (total) setVal(bytesEl, 'js', Math.round(total / 1024), 'kb');
+      });
+      obs.observe({ type: 'resource', buffered: true });
+    } catch {}
+  }
+
   /* -------- boot -------- */
   function boot() {
     initHeaderHeight();
     initEntrance();
     initWordReveal();
+    initHeroScatter();
     initTheme();
     initYear();
     initLocalTime();
@@ -2322,6 +2566,11 @@ no scheduled maintenance windows. occasional production fires.`);
     initPinnedPrinciples();
     initCursorChip();
     initCardInteractions();
+
+    // Premium polish layer
+    initLiveRealFiction();
+    initContextCursor();
+    initWebVitals();
 
     consoleSignature();
   }
