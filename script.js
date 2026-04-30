@@ -1622,6 +1622,17 @@ no scheduled maintenance windows. occasional production fires.`);
     return `${Math.floor(d / (86400 * 365))}y`;
   }
 
+  // Robust push-count: GitHub may fill commits[] OR distinct_size OR size.
+  // We pick the largest signal so a 0 never sneaks through.
+  function pushCount(e) {
+    if (!e || !e.payload) return 0;
+    return Math.max(
+      Array.isArray(e.payload.commits) ? e.payload.commits.length : 0,
+      typeof e.payload.distinct_size === 'number' ? e.payload.distinct_size : 0,
+      typeof e.payload.size === 'number' ? e.payload.size : 0
+    );
+  }
+
   function eventIcon(type) {
     switch (type) {
       case 'PushEvent':         return '↟';
@@ -1639,7 +1650,10 @@ no scheduled maintenance windows. occasional production fires.`);
 
   function eventLabel(e) {
     switch (e.type) {
-      case 'PushEvent':         return `pushed ${e.payload?.commits?.length || 0} commit${(e.payload?.commits?.length || 0) === 1 ? '' : 's'} to`;
+      case 'PushEvent': {
+        const n = pushCount(e);
+        return `pushed ${n} commit${n === 1 ? '' : 's'} to`;
+      }
       case 'CreateEvent':       return `created ${e.payload?.ref_type || 'something'} on`;
       case 'DeleteEvent':       return `deleted ${e.payload?.ref_type || 'something'} on`;
       case 'ForkEvent':         return 'forked';
@@ -1693,13 +1707,10 @@ no scheduled maintenance windows. occasional production fires.`);
       if (!r.ok) throw new Error('api ' + r.status);
       let raw = await r.json();
       if (!Array.isArray(raw)) raw = [];
-      // Drop empty / no-op pushes and other meaningless events
+      // Drop empty / no-op pushes and other meaningless events.
+      // pushCount() guarantees we never render a "0 commits" line.
       events = raw.filter(e => {
-        if (e.type === 'PushEvent') {
-          const n = e.payload?.commits?.length || e.payload?.distinct_size || 0;
-          return n > 0;
-        }
-        // Keep meaningful event types
+        if (e.type === 'PushEvent') return pushCount(e) > 0;
         return ['CreateEvent','PullRequestEvent','IssuesEvent','ReleaseEvent','ForkEvent','PublicEvent','CommitCommentEvent'].includes(e.type);
       });
       if (status) {

@@ -1349,7 +1349,7 @@ footer{
 .modal{
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 2000;
   display: none;
 }
 .modal[hidden]{ display: none !important; }
@@ -1434,7 +1434,7 @@ footer{
 .palette{
   position: fixed;
   inset: 0;
-  z-index: 300;
+  z-index: 2100;
   display: none;
 }
 .palette[hidden]{ display: none !important; }
@@ -1542,7 +1542,7 @@ footer{
   box-shadow: var(--shadow-2);
   opacity: 0;
   pointer-events: none;
-  z-index: 400;
+  z-index: 2400;
   transition: opacity var(--t-2) var(--ease), transform var(--t-2) var(--ease);
 }
 .toast.on{
@@ -1577,7 +1577,7 @@ footer{
   gap: 8px;
   padding: 9px 12px;
   position: relative;
-  z-index: 120;
+  z-index: 1002;
 }
 .nav-mobile[open]::before{
   content: "";
@@ -1586,23 +1586,23 @@ footer{
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  z-index: 110;
+  z-index: 1001;
   animation: fade var(--t-2) var(--ease);
 }
 @keyframes fade{ from{opacity:0;} to{opacity:1;} }
 .nav-panel{
   position: fixed;
-  top: calc(env(safe-area-inset-top) + 64px);
+  top: calc(env(safe-area-inset-top) + var(--header-h) + 10px);
   right: calc(env(safe-area-inset-right) + 14px);
   width: min(360px, calc(100vw - 28px));
-  max-height: calc(100vh - 110px);
+  max-height: calc(100dvh - var(--header-h) - 24px);
   overflow: auto;
   padding: 14px;
   background: var(--bg-elev);
   border: 1px solid var(--line-2);
   border-radius: var(--r-md);
   box-shadow: var(--shadow-2);
-  z-index: 115;
+  z-index: 1003;
   animation: navPop var(--t-2) var(--ease-out);
 }
 @keyframes navPop{
@@ -1902,7 +1902,7 @@ footer{
 .term.is-full{
   position: fixed;
   inset: 12px;
-  z-index: 350;
+  z-index: 2200;
   max-height: none;
   border-radius: var(--r-md);
   animation: termFullIn 200ms var(--ease-out);
@@ -2189,7 +2189,7 @@ footer{
 .entrance{
   position: fixed;
   inset: 0;
-  z-index: 1500;
+  z-index: 3000;
   background: var(--bg);
   display: grid;
   place-items: center;
