@@ -781,7 +781,7 @@
     const body = '%c\n\n  /usr/local/bin/portfolio\n  → looking for systems eyes? mail nicholaslasagna@gmail.com\n  → ⌘K opens the palette · ` opens the shell · / focuses search\n  → letters jump: w work · p projects · n principles · a about · s stack · c contact · t top\n  → konami code does something\n';
     try {
       console.log(name + tag + body,
-        'font: 600 14px ui-monospace, JetBrains Mono, monospace; color: #f5b94a;',
+        'font: 600 14px ui-monospace, JetBrains Mono, monospace; color: #ec4d6e;',
         'font: 13px ui-monospace; color: #8d8a82;',
         'font: 12px ui-monospace; color: #c8c4ba;'
       );

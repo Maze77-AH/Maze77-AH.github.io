@@ -5,10 +5,11 @@
 
 /* ---------- Tokens ---------- */
 :root{
-  --bg:        #0a0a0b;
-  --bg-elev:   #111114;
-  --bg-elev-2: #16161a;
-  --bg-sunk:   #08080a;
+  /* cool ink — slight navy undertone so the coral primary sings against it */
+  --bg:        #0a0c14;
+  --bg-elev:   #11131c;
+  --bg-elev-2: #161824;
+  --bg-sunk:   #07080e;
 
   --text:      #ece9e0;
   --text-2:    #c8c4ba;
@@ -19,9 +20,11 @@
   --line-2:    rgba(236,233,224,0.14);
   --line-3:    rgba(236,233,224,0.22);
 
-  --accent:    #f5b94a; /* warm amber — primary */
-  --accent-2:  #5cd6c0; /* dusty mint-teal — atmospheric secondary */
-  --accent-3:  #c0a4ff; /* faint violet — used very sparingly for depth */
+  /* Electric coral-rose primary — distinct, designer, not AI-cliche.
+     Aqua secondary balances the warmth. Lavender used only for ambient depth. */
+  --accent:    #ec4d6e; /* coral-rose */
+  --accent-2:  #4dd6cf; /* cool aquamarine */
+  --accent-3:  #b8a4ff; /* lavender — atmospheric only */
   --accent-ink:#0a0a0b;
 
   --shadow:   0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 48px rgba(0,0,0,0.42);
@@ -66,9 +69,9 @@
   --line-2:    rgba(20,19,15,0.16);
   --line-3:    rgba(20,19,15,0.24);
 
-  --accent:    #b86b1a;       /* deep amber */
-  --accent-2:  #1f8a7c;       /* deep teal — light-mode complement */
-  --accent-3:  #6b4ec7;       /* deep violet */
+  --accent:    #c91e58;       /* deep rose-coral */
+  --accent-2:  #1f8a7c;       /* deep teal — cool counter */
+  --accent-3:  #5b46c0;       /* deep violet — atmospheric only */
   --accent-ink:#fbfaf6;
 
   --shadow:   0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 36px rgba(20,19,15,0.10);
@@ -1900,15 +1903,15 @@ footer{
 .shell-section{ padding-top: clamp(40px, 6vw, 70px); }
 
 .term{
-  --term-bg: #0c0d10;
-  --term-bg-2: #07080a;
+  --term-bg: #0a0d14;
+  --term-bg-2: #06080e;
   --term-line: rgba(245,233,210,0.10);
   --term-text: #ece9e0;
   --term-muted: #8d8a82;
-  --term-prompt: #f5b94a;
-  --term-host: #ff8a4c;
-  --term-user: #a3e6a3;
-  --term-accent: #f5b94a;
+  --term-prompt: #ec4d6e;
+  --term-host: #4dd6cf;
+  --term-user: #b8e3a3;
+  --term-accent: #ec4d6e;
   --term-err: #ff7a7a;
   --term-info: #8fb4ff;
 
