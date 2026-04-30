@@ -82,6 +82,9 @@
   <div class="grain" aria-hidden="true"></div>
   <div class="cursor-glow" aria-hidden="true"></div>
 
+  <!-- Top scroll-progress bar (above fixed header) -->
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
   <!-- Cursor-follow project chip -->
   <div class="cursor-chip" id="cursorChip" aria-hidden="true">
     <span class="cc-text">Open</span>
@@ -485,7 +488,7 @@
         </div>
       </div>
 
-      <div class="projects-grid" id="projectsGrid">
+      <div class="projects-grid" id="projectsGrid" data-stagger>
 
         <article class="card project" data-tags="infra systems games" aria-label="Project: RealFiction">
           <div class="card-inner">
